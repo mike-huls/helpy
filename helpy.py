@@ -158,7 +158,7 @@ def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
         filedata = file.read()
 
     # Replace the target string
-    filedata = f"{replacment_text}".join(filedata.split(replace_this_text))
+    filedata = filedata.replace(replace_this_text, replacment_text)
 
     # Write the file out again
     with open(filepath, 'w') as file:
@@ -452,7 +452,7 @@ def main(args: [str]):
         help()
 
 
-# 2022-03-07 12:44
+# 2022-03-07 15:59
 if __name__ == "__main__":
     # PYPI
     PYPI_URL: str = None
