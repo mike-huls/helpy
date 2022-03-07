@@ -1,4 +1,5 @@
 config/conf/*
+devtest
 
 # PyCharm
 .idea
