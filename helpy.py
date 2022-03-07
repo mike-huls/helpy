@@ -121,19 +121,19 @@ def getrequest(url: str) -> str:
             raise ValueError("Error in request, status code not 200")
         return httpresponse.read().decode(httpresponse.headers.get_content_charset("utf-8"))
 def printout(msg: str, func:str=None, doPrint: bool = True):
-    buffer = 10 - (0 if (func == None) else len(func))
-    if (buffer < 0):
-        buffer = 0
+    buffer = 20 - (0 if (func == None) else len(func))
+    if (buffer <= 1):
+        buffer = 1
 
     if (doPrint):
         func_str = "" if (func == None) else f"{func}"
         print(f"[Helpy] {func_str}{' '*buffer}{msg} ")
-def create_folder_if_not_exists(folderpath:str, verbose:bool=False):
+def create_folder(folderpath:str, verbose:bool=False):
     if (os.path.exists(folderpath)):
-        printout(func=create_folder_if_not_exists.__name__, msg=f"Folder {folderpath} already exists", doPrint=verbose)
+        printout(func=create_folder.__name__, msg=f"Folder {folderpath} already exists. Skipping..", doPrint=verbose)
         return
     os.mkdir(path=folderpath)
-    printout(func=create_folder_if_not_exists.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
+    printout(func=create_folder.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
 def download_file(url:str, filepath:str, verbose:bool=False, overwrite:bool=False):
     """ download a file from a url to the given file path """
 
@@ -152,7 +152,7 @@ def create_empty_file(filepath:str, verbose:bool=False, overwrite:bool=False):
             return
     with open(filepath, 'w') as file:
         file.write("")
-def replace_projectname_in_file(filepath:str, replace_this_text:str, replacment_text:str):
+def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
     """ Replaces a text with the replacement text in a text file """
     with open(filepath, 'r') as file:
         filedata = file.read()
@@ -187,11 +187,11 @@ def create_virtualenv(projectfolder:str, verbose:bool=False):
 
     try:
         import venv
-        printout(func=create_virtualenv.__name__, msg=f"venv package is installed", doPrint=verbose)
     except ImportError as e:
         printout(func=create_virtualenv.__name__, msg=f"Create venv: venv not installed: installing..", doPrint=verbose)
         subprocess.call(f"{VENVPY} -m pip install venv --upgrade")
         printout(func=create_virtualenv.__name__, msg=f"Create venv: venv successfully installed.", doPrint=verbose)
+    printout(func=create_virtualenv.__name__, msg=f"Installing virtualenv", doPrint=verbose )
     subprocess.call(f'python.exe -m venv {projectfolder}/venv')
     printout(func=create_virtualenv.__name__, msg=f"Successfully created virtualenv", doPrint=verbose )
 # endregion
@@ -211,12 +211,12 @@ def init_project(verbose:bool=False, force:bool=False):
 
     # config/conf/.env
     printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
 
     # default folders
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'services'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'services'), verbose=verbose)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
@@ -238,12 +238,12 @@ def init_package(package_name:str, verbose:bool=False, force:bool=False):
 
     printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
     # Create module folder with __init__.py
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
     create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
 
     # config/conf/.env
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
-    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
     create_empty_file(filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
 
@@ -255,8 +255,8 @@ def init_package(package_name:str, verbose:bool=False, force:bool=False):
     download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
 
     # Adjust files by replacing the project name
-    replace_projectname_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
-    replace_projectname_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+    replace_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+    replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
 #endregion
@@ -409,7 +409,7 @@ def main(args: [str]):
             package_name = pop_arg_or_exit(arglist=args, errormessage="[helpy init package] requires another argument: 'package_name'. Example: "
                                                                       "\n\t[helply init package my_package_name]"
                                                                       "\n\tCheck out [helpy help] for more information")
-            init_package(package_name=package_name)
+            init_package(package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy help] for more information")
     elif (cmd1 == 'freeze'):

@@ -5,8 +5,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='PROJECT_NAME',                            # should match the package folder
-    packages=['PROJECT_NAME'],                      # should match the package folder
+    name='{PROJECT_NAME}',                            # should match the package folder
+    packages=['{PROJECT_NAME}'],                      # should match the package folder
     version='0.0.0',                                # UPDATE
     license='MIT',                                  # should match your chosen license
     description='',                                 # UPDATE
