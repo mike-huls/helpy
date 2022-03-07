@@ -11,13 +11,13 @@ RUN apt-get update --no-install-recommends
 
 
 # install python packages in the venv
-# Make sure DNXPYPI_PASS and DNXPYPI_USER are in the .env and to
+# Make sure PYPI_PASS and PYPI_USER are in the .env and to
 SHELL ["/bin/bash", "-c"]
 COPY requirements.txt .
 RUN --mount=type=secret,id=pypi_creds source /run/secrets/pypi_creds \
     && python -m venv /app/venv \
     && python -m pip install --upgrade pip \
-    && python -m pip install --extra-index-url https://${DNXPYPI_USER}:${DNXPYPI_PASS}@${PYPI_URL} -r requirements.txt
+    && python -m pip install --extra-index-url https://${PYPI_USER}:${PYPI_PASS}@${PYPI_URL} -r requirements.txt
 
 
 # Construct the final image

@@ -391,7 +391,7 @@ def main(args: [str]):
         # Checks for updates
         update(force=False, verbose=VERBOSE)
 
-
+    # Regular functions
     if (cmd1 == 'update'):
         update(force=True, verbose=VERBOSE)
     elif (cmd1 == 'help'):
