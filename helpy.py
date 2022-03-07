@@ -74,24 +74,32 @@ def display_info():
 def help():
     helpmessage = f"""
     Welcome to Helpy (v.{helpy_cur_version()})
-    Call python helpy.py [COMMAND] [EXTRA PARAMS] with the following commands:
-        update              updates helpy if there is a new version
-        info                prints out info about helpy, including constants you've set 
-        init project        prepares the current fodler for a python project
-        init package        prepares the current folder for a python package
-        freeze              pip freeze to create requirements.txt
-        serve fastapi       tries to spin up the current project as a fastapi project 
-        docker build        builds the cu
-        docker push
-        package build
+    Call [python helpy.py] with any of the following commands:
+        help                        display this message
+        update                      updates helpy if there is a new version
+        info                        prints out info about helpy, including constants you've set 
+        init project                prepares the current folder for a python project
+        init package                prepares the current folder for a python package
+        freeze                      pip freeze to create requirements.txt
+        serve fastapi               tries to spin up the current project as a fastapi project 
+        docker build                builds the image specified in the dockerfile
+        docker push                 pushes the image to dockerhub. Set username in .env or from cmd
+        package build               uses the setup.py to build the package
+        package push                pushes the package to the pypi specified in the .env
     
     Add the -v flag for verbose output
-    Add the -y or -f flag to confirm all dialogs
-    """
-    printout(msg=helpmessage, doPrint=True)
+    Add the -y or -f flag to confirm all dialogs"""
+    printout(func="help", msg=helpmessage, doPrint=True)
+
 #endregion
 
 # region UTIL
+def pop_arg_or_exit(arglist:[str], errormessage:str):
+    """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
+    if (len(arglist) <= 0):
+        printout(func="helpy", msg=f"{errormessage}", doPrint=True)
+        sys.exit(1)
+    return arglist.pop(0).lower()
 def prompt_sure(prompt_text: str) -> None:
     def outer_wrapper(func):
         def wrapper(*args, **kwargs):
@@ -113,11 +121,13 @@ def getrequest(url: str) -> str:
             raise ValueError("Error in request, status code not 200")
         return httpresponse.read().decode(httpresponse.headers.get_content_charset("utf-8"))
 def printout(msg: str, func:str=None, doPrint: bool = True):
-    buffer = 30 - (0 if (func == None) else len(func))
+    buffer = 10 - (0 if (func == None) else len(func))
+    if (buffer < 0):
+        buffer = 0
 
     if (doPrint):
         func_str = "" if (func == None) else f"{func}"
-        print(f"[Helpy] {func_str} {' '*buffer} {msg} ")
+        print(f"[Helpy] {func_str}{' '*buffer}{msg} ")
 def create_folder_if_not_exists(folderpath:str, verbose:bool=False):
     if (os.path.exists(folderpath)):
         printout(func=create_folder_if_not_exists.__name__, msg=f"Folder {folderpath} already exists", doPrint=verbose)
@@ -142,6 +152,19 @@ def create_empty_file(filepath:str, verbose:bool=False, overwrite:bool=False):
             return
     with open(filepath, 'w') as file:
         file.write("")
+def replace_projectname_in_file(filepath:str, replace_this_text:str, replacment_text:str):
+    """ Replaces a text with the replacement text in a text file """
+    with open(filepath, 'r') as file:
+        filedata = file.read()
+
+    # Replace the target string
+    filedata = filedata.replace(replace_this_text, replacment_text)
+
+    # Write the file out again
+    with open(filepath, 'w') as file:
+        file.write(filedata)
+
+
 # endregion
 
 # region ENV
@@ -182,9 +205,12 @@ def init_project(verbose:bool=False, force:bool=False):
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
     # Create venv
+    printout(func=init_project.__name__, msg=f"Initializing venv..", doPrint=verbose)
     create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
+    printout(func=init_project.__name__, msg=f"Initialized venv", doPrint=verbose)
 
     # config/conf/.env
+    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
@@ -206,8 +232,11 @@ def init_package(package_name:str, verbose:bool=False, force:bool=False):
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
     # Create venv
+    printout(func=init_project.__name__, msg=f"Initializing venv..", doPrint=verbose)
     create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
+    printout(func=init_project.__name__, msg=f"Initialized venv", doPrint=verbose)
 
+    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
     # Create module folder with __init__.py
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
     create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
@@ -225,6 +254,10 @@ def init_package(package_name:str, verbose:bool=False, force:bool=False):
     download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
 
+    # Adjust files by replacing the project name
+    replace_projectname_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+    replace_projectname_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
 #endregion
 
@@ -235,7 +268,7 @@ def pip_freeze(verbose: bool = False):
         python_location = os.path.join(os.getcwd(), VENVPY)
         with open('requirements.txt', 'w') as file_:
             subprocess.call([python_location, '-m', 'pip', 'freeze'], stdout=file_)
-        printout(msg=f"Pip freeze requirements succes", doPrint=verbose)
+        printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
     except Exception as e:
         printout(func=pip_freeze.__name__, msg=f"{pip_freeze.__name__} failed: {e}", doPrint=True)
 # endregion
@@ -284,7 +317,7 @@ def docker_push(verbose: bool = False, force: bool = False):
     printout(func=docker_push.__name__, msg=f"Pushing image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
     try:
         subprocess.call(f'docker push "{DOCKER_IMAGE_NAME}"')
-        printout(msg=f"Successfully pushed image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
+        printout(func=docker_push.__name__, msg=f"Successfully pushed image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
     except Exception as e:
         printout(func=docker_push.__name__, msg=f"Failed to push docker image: '{e}'", doPrint=True)
 
@@ -343,49 +376,80 @@ def package_push(verbose: bool = False, force: bool = False, pypi_username: str 
 
 
 def main(args: [str]):
-    cmd1 = args[0].lower()
+    if (len(args) == 0):
+        help()
+        quit()
+    cmd1 = pop_arg_or_exit(arglist=args, errormessage="Helpy expects at least one argument. Check out [helpy help] for more information")
+
+    # Settings
     DO_FORCE = len({'f', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
     VERBOSE = len({'v', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
+    args = [a for a in args if (a[0] != '-')]
 
-    # if (cmd1 != "update" and not is_up_to_date()):
-    #     res = input("update available! Download? (y/n)")
-    #     if (DO_FORCE or res == 'y'):
-    #         update()
+    # Check for updates
     if (cmd1 != 'update'):
         # Checks for updates
         update(force=False, verbose=VERBOSE)
 
+
     if (cmd1 == 'update'):
         update(force=True, verbose=VERBOSE)
-    if (cmd1 == 'info'):
+    elif (cmd1 == 'help'):
+        help()
+    elif (cmd1 == 'info'):
         display_info()
-    if (cmd1 == 'init'):
-        if (args[1].lower() == 'project'):
-            init_project(force=DO_FORCE, verbose=VERBOSE)
-        elif (args[1].lower() == 'package'):
-            init_package()
-    elif (cmd1 == 'freeze'):
+    elif (cmd1 == 'init'):
+        # Get init_type
+        init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy init] requires another argument. Check out [helpy help] for more information")
 
+        # Functions
+        if (init_type == 'project'):
+            init_project(force=DO_FORCE, verbose=VERBOSE)
+        elif (init_type == 'package'):
+            package_name = pop_arg_or_exit(arglist=args, errormessage="[helpy init package] requires another argument: 'package_name'. Example: "
+                                                                      "\n\t[helply init package my_package_name]"
+                                                                      "\n\tCheck out [helpy help] for more information")
+            init_package(package_name=package_name)
+        else:
+            printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy help] for more information")
+    elif (cmd1 == 'freeze'):
+        # pip freeze
         pip_freeze(verbose=VERBOSE)
     elif (cmd1 == 'serve'):
-        #
-        serve_fastapi()
+        # Get application type
+        app_type = pop_arg_or_exit(arglist=args, errormessage="[helpy serve] requires another argument. Check out [helpy help] for more information")
+
+        if (app_type == 'fastapi'):
+            serve_fastapi()
+        else:
+            printout(func="helpy", msg=f"Unknown option for [helpy serve]: '{app_type}'. Check out [helpy help] for more information")
     elif (cmd1 == 'docker'):
-        if (args[1].lower() == 'build'):
+        docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy docker] requires another argument. Check out [helpy help] for more information")
+
+        if (docker_op == 'build'):
             docker_build(verbose=VERBOSE)
-        elif (args[1].lower() == 'push'):
+        elif (docker_op == 'push'):
             docker_push(force=DO_FORCE, verbose=VERBOSE)
+        else:
+            printout(func="helpy", msg=f"Unknown option for [helpy docker]: '{docker_op}'. Check out [helpy help] for more information")
     elif (cmd1 == 'package'):
-        if (args[1].lower() == 'build'):
+        package_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
+
+        if (package_op == 'build'):
             package_build(verbose=VERBOSE)
-        elif (args[1].lower() == 'push'):
+        elif (package_op == 'push'):
             # 1. Get username and password from args
-            cleanargs = [a for a in args[2:] if (a[0] != '-')]
-            my_username = PYPI_USERNAME or (cleanargs[0] if (len(cleanargs) >= 1) else None)
-            my_password = PYPI_PASSWORD or (cleanargs[1] if (len(cleanargs) >= 2) else None)
+            my_username = pop_arg_or_exit(arglist=args, errormessage="[helpy package push] requires another argument. Check out [helpy help] for more information")
+            my_password = pop_arg_or_exit(arglist=args, errormessage="[helpy package push] requires another argument. Check out [helpy help] for more information")
+
+            # my_username = PYPI_USERNAME or (cleanargs[0] if (len(cleanargs) >= 1) else None)
+            # my_password = PYPI_PASSWORD or (cleanargs[1] if (len(cleanargs) >= 2) else None)
+            print(VERBOSE, DO_FORCE, my_username, my_password)
+            quit()
             package_push(verbose=VERBOSE, force=DO_FORCE, pypi_username=my_username, pypi_password=my_password)
     else:
         print(f"unknown command: '{args[0]}'")
+        help()
 
 
 # 2022-03-07 12:44
