@@ -167,22 +167,47 @@ def init_project(verbose:bool=False, force:bool=False):
     # Create venv
     create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
 
-    # Create folders
+    # config/conf/.env
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+
+    # default folders
     create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'services'), verbose=verbose)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_readme.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
+
+    printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
+def init_package(package_name:str, verbose:bool=False, force:bool=False):
+    """ Get files and folder structure"""
+    PROJFOLDER = os.getcwd()
+    printout(func=init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=verbose)
+    FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
+
+    # Create venv
+    create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
+
+    # Create module folder with __init__.py
+    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
+
+    # config/conf/.env
+    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
+    create_folder_if_not_exists(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     create_empty_file(filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+
+    # Create default files (with content)
+    download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_readme.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
 
-def init_package():
-    """ Get files and folder structure"""
-#
 
 # region GENERAL
 def pip_freeze(verbose: bool = False):
