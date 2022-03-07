@@ -43,7 +43,7 @@ def update(verbose: bool = False, force: bool = False):
                 return
 
     # 3. Combine and write
-    newHelpy = gist_content + "\n\n" + curfile_initmain
+    newHelpy = gist_content + "\n" + curfile_initmain
     with open(__file__, 'w') as file:
         file.write(newHelpy)
 
@@ -452,7 +452,7 @@ def main(args: [str]):
         help()
 
 
-# 2022-03-07 15:59
+# 2022-03-07 16:16
 if __name__ == "__main__":
     # PYPI
     PYPI_URL: str = None
