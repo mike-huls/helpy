@@ -1,4 +1,4 @@
-# PROJECT_NAME
+# {PROJECT_NAME}
 Description of this project
 
 ## Installation 
