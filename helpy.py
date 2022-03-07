@@ -158,7 +158,7 @@ def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
         filedata = file.read()
 
     # Replace the target string
-    filedata = filedata.replace(replace_this_text, replacment_text)
+    filedata = f"{replacment_text}".join(filedata.split(replace_this_text))
 
     # Write the file out again
     with open(filepath, 'w') as file:
