@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import subprocess
 import urllib.request
@@ -151,6 +152,12 @@ def create_folder(folderpath: str, verbose: bool = False):
         return
     os.mkdir(path=folderpath)
     printout(func=create_folder.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
+
+
+def remove_folder(folderpath: str, verbose: bool = False):
+    if (os.path.isdir(folderpath)):
+        shutil.rmtree(folderpath)
+    printout(func=remove_folder.__name__, msg=f"Folder {folderpath} removed", doPrint=verbose)
 
 
 def download_file(url: str, filepath: str, verbose: bool = False, overwrite: bool = False):
@@ -366,10 +373,17 @@ def docker_push(verbose: bool = False, force: bool = False):
 
 # region PYPI
 def package_build(verbose: bool = False):
-    try:
-        subprocess.call("rm ./dist/*")
-    except Exception as e:
-        pass
+    """ packages code in current directory to the dist folder """
+
+    dist_folder_path = os.path.join(os.getcwd(), 'dist')
+    if (os.path.isdir(dist_folder_path)):
+        printout(func=package_build.__name__, msg=f"removing content of dist folder at {dist_folder_path}", doPrint=verbose)
+        remove_folder(folderpath=dist_folder_path, verbose=False)
+        create_folder(folderpath=dist_folder_path, verbose=False)
+        printout(func=package_build.__name__, msg=f"removed content of dist folder at {dist_folder_path}", doPrint=verbose)
+    else:
+        printout(func=package_build.__name__, msg=f"Dist folder does not exist yet. Skipping..", doPrint=verbose)
+
     pip_freeze(verbose=verbose)
     try:
         import twine
@@ -405,7 +419,6 @@ def package_push(verbose: bool = False, force: bool = False, pypi_url: str = Non
         printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=verbose)
     except Exception as e:
         printout(func=package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
-
 
 
 # endregion
@@ -487,7 +500,7 @@ def main(args: [str]):
         help()
 
 
-# 2022-03-08 16:29
+# 2022-03-08 16:42
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
