@@ -385,9 +385,6 @@ def package_push(verbose: bool = False, force: bool = False, pypi_url: str = Non
         if (input("Are you sure you want to push the package to PyPi? (y/n)").lower() != 'y'):
             return
 
-    print(pypi_url, pypi_username, pypi_password)
-    quit()
-
     # 1. Ensure username, password and url
     if (pypi_username == None or len(pypi_username) <= 3):      pypi_username = input("PyPi username")
     if (pypi_password == None or len(pypi_password) <= 3):      pypi_password = input("PyPi password")
