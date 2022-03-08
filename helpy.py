@@ -6,7 +6,7 @@ import urllib.request
 VENVPY = "venv/scripts/python.exe"
 
 
-#region HELPY
+# region HELPY
 def update(verbose: bool = False, force: bool = False):
     """ Downloads new helpy """
 
@@ -50,6 +50,8 @@ def update(verbose: bool = False, force: bool = False):
     # Feedback
     gist_idx_dateline = gist_idx_initmainline - 1
     printout(func=update.__name__, msg=f"updated helpy to {gist_lines[gist_idx_dateline].replace('# ', '')}", doPrint=True)
+
+
 def helpy_cur_version():
     NAME_MAIN_STRING = 'if __name__ == "__main__":'
     with open(__file__, 'r') as rfile:
@@ -59,6 +61,8 @@ def helpy_cur_version():
     curfile_date = curfile_lines[curfile_idx_dateline]
     curfile_date = curfile_date.replace("# ", "")
     return curfile_date
+
+
 def display_info():
     helpy_version = helpy_cur_version()
     printout(func="info", msg=f"""
@@ -71,6 +75,8 @@ def display_info():
         DOCKER:
         image name: \t {DOCKER_IMAGE_NAME if (DOCKER_IMAGE_NAME) else ""}
     """, doPrint=True)
+
+
 def help():
     helpmessage = f"""
     Welcome to Helpy (v.{helpy_cur_version()})
@@ -86,20 +92,23 @@ def help():
         docker push                 pushes the image to dockerhub. Set username in .env or from cmd
         package build               uses the setup.py to build the package
         package push                pushes the package to the pypi specified in the .env
-    
+
     Add the -v flag for verbose output
     Add the -y or -f flag to confirm all dialogs"""
     printout(func="help", msg=helpmessage, doPrint=True)
 
-#endregion
+
+# endregion
 
 # region UTIL
-def pop_arg_or_exit(arglist:[str], errormessage:str):
+def pop_arg_or_exit(arglist: [str], errormessage: str):
     """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
     if (len(arglist) <= 0):
         printout(func="helpy", msg=f"{errormessage}", doPrint=True)
         sys.exit(1)
     return arglist.pop(0).lower()
+
+
 def prompt_sure(prompt_text: str) -> None:
     def outer_wrapper(func):
         def wrapper(*args, **kwargs):
@@ -110,31 +119,41 @@ def prompt_sure(prompt_text: str) -> None:
         return wrapper
 
     return outer_wrapper
+
+
 def prompt_yesno(prompt_text: str) -> None:
     if (input(prompt_text).lower() != 'y'):
         print("exiting..")
         exit(0)
+
+
 def getrequest(url: str) -> str:
     httprequest = urllib.request.Request(url, data={}, headers={}, method="GET")
     with urllib.request.urlopen(httprequest) as httpresponse:
         if (httpresponse.status != 200):
             raise ValueError("Error in request, status code not 200")
         return httpresponse.read().decode(httpresponse.headers.get_content_charset("utf-8"))
-def printout(msg: str, func:str=None, doPrint: bool = True):
+
+
+def printout(msg: str, func: str = None, doPrint: bool = True):
     buffer = 20 - (0 if (func == None) else len(func))
     if (buffer <= 1):
         buffer = 1
 
     if (doPrint):
         func_str = "" if (func == None) else f"{func}"
-        print(f"[Helpy] {func_str}{' '*buffer}{msg} ")
-def create_folder(folderpath:str, verbose:bool=False):
+        print(f"[Helpy] {func_str}{' ' * buffer}{msg} ")
+
+
+def create_folder(folderpath: str, verbose: bool = False):
     if (os.path.exists(folderpath)):
         printout(func=create_folder.__name__, msg=f"Folder {folderpath} already exists. Skipping..", doPrint=verbose)
         return
     os.mkdir(path=folderpath)
     printout(func=create_folder.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
-def download_file(url:str, filepath:str, verbose:bool=False, overwrite:bool=False):
+
+
+def download_file(url: str, filepath: str, verbose: bool = False, overwrite: bool = False):
     """ download a file from a url to the given file path """
 
     if (not overwrite):
@@ -143,7 +162,9 @@ def download_file(url:str, filepath:str, verbose:bool=False, overwrite:bool=Fals
             return
     with open(filepath, 'w') as file:
         file.write(getrequest(url=url))
-def create_empty_file(filepath:str, verbose:bool=False, overwrite:bool=False):
+
+
+def create_empty_file(filepath: str, verbose: bool = False, overwrite: bool = False):
     """ Creates an empty file if not exists """
 
     if (not overwrite):
@@ -152,7 +173,9 @@ def create_empty_file(filepath:str, verbose:bool=False, overwrite:bool=False):
             return
     with open(filepath, 'w') as file:
         file.write("")
-def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
+
+
+def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str):
     """ Replaces a text with the replacement text in a text file """
     with open(filepath, 'r') as file:
         filedata = file.read()
@@ -163,6 +186,8 @@ def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
     # Write the file out again
     with open(filepath, 'w') as file:
         file.write(filedata)
+
+
 # endregion
 
 # region ENV
@@ -173,11 +198,14 @@ def load_env_vars(env_file_path: str = None) -> None:
         subprocess.call(f"{VENVPY} -m pip install python-dotenv --upgrade")
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=env_file_path)
+
+
 def venv_exists() -> bool:
     return os.path.isfile(VENVPY)
-def create_virtualenv(projectfolder:str, verbose:bool=False):
-    """ Creates a virtual environment in a project folder """
 
+
+def create_virtualenv(projectfolder: str, verbose: bool = False):
+    """ Creates a virtual environment in a project folder """
 
     if (os.path.exists(os.path.join(projectfolder, 'venv'))):
         printout(func=create_virtualenv.__name__, msg=f"Virtual environment already exists", doPrint=verbose)
@@ -189,13 +217,15 @@ def create_virtualenv(projectfolder:str, verbose:bool=False):
         printout(func=create_virtualenv.__name__, msg=f"Create venv: venv not installed: installing..", doPrint=verbose)
         subprocess.call(f"{VENVPY} -m pip install venv --upgrade")
         printout(func=create_virtualenv.__name__, msg=f"Create venv: venv successfully installed.", doPrint=verbose)
-    printout(func=create_virtualenv.__name__, msg=f"Installing virtualenv", doPrint=verbose )
+    printout(func=create_virtualenv.__name__, msg=f"Installing virtualenv", doPrint=verbose)
     subprocess.call(f'python.exe -m venv {projectfolder}/venv')
-    printout(func=create_virtualenv.__name__, msg=f"Successfully created virtualenv", doPrint=verbose )
+    printout(func=create_virtualenv.__name__, msg=f"Successfully created virtualenv", doPrint=verbose)
+
+
 # endregion
 
-#region INIT
-def init_project(verbose:bool=False, force:bool=False):
+# region INIT
+def init_project(verbose: bool = False, force: bool = False):
     """ Needs certain files and folder structure always. """
 
     PROJFOLDER = os.getcwd()
@@ -223,7 +253,9 @@ def init_project(verbose:bool=False, force:bool=False):
     download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
-def init_package(package_name:str, verbose:bool=False, force:bool=False):
+
+
+def init_package(package_name: str, verbose: bool = False, force: bool = False):
     """ Get files and folder structure"""
     PROJFOLDER = os.getcwd()
     printout(func=init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=verbose)
@@ -257,7 +289,9 @@ def init_package(package_name:str, verbose:bool=False, force:bool=False):
     replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
-#endregion
+
+
+# endregion
 
 # region PIP
 def pip_freeze(verbose: bool = False):
@@ -269,6 +303,8 @@ def pip_freeze(verbose: bool = False):
         printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
     except Exception as e:
         printout(func=pip_freeze.__name__, msg=f"{pip_freeze.__name__} failed: {e}", doPrint=True)
+
+
 # endregion
 
 # region FASTAPI
@@ -277,6 +313,8 @@ def serve_fastapi():
         subprocess.call('venv/scripts/python.exe -m uvicorn main:app --env-file config/conf/.env --reload')
     except Exception as e:
         printout(func=serve_fastapi.__name__, msg=f"Failed to serve: {e}", doPrint=True)
+
+
 # endregion
 
 # region docker
@@ -285,10 +323,10 @@ def docker_system_prune():
         subprocess.call(f"docker system prune -f")
     except Exception as e:
         printout(func=docker_system_prune.__name__, msg=f"Docker system prune failed: '{e}'", doPrint=True)
-def docker_login(docker_username:str, docker_password:str, verbose:bool=False):
+
+
+def docker_login(docker_username: str, docker_password: str, verbose: bool = False):
     """ Use the docker image name to log in """
-
-
 
 
 def docker_build(verbose: bool = False):
@@ -340,18 +378,20 @@ def package_build(verbose: bool = False):
     subprocess.call(f"{VENVPY} setup.py sdist")
 
 
-def package_push(verbose: bool = False, force: bool = False, pypi_url:str=None, pypi_username:str=None, pypi_password:str=None):
+def package_push(verbose: bool = False, force: bool = False, pypi_url: str = None, pypi_username: str = None, pypi_password: str = None):
     """ Pushes the package to pypi server """
 
     if (not force):
         if (input("Are you sure you want to push the package to PyPi? (y/n)").lower() != 'y'):
             return
 
+    print(pypi_url, pypi_username, pypi_password)
+    quit()
+
     # 1. Ensure username, password and url
     if (pypi_username == None or len(pypi_username) <= 3):      pypi_username = input("PyPi username")
     if (pypi_password == None or len(pypi_password) <= 3):      pypi_password = input("PyPi password")
     if (pypi_url == None or len(pypi_url) <= 3):                pypi_url = input("PyPi url")
-
 
     # 2. Ensure twine is installed
     try:
@@ -436,16 +476,17 @@ def main(args: [str]):
             # 1. Check if username and password are set
             username = None
             password = None
+            if ((PYPI_URL != None) and (len(PYPI_URL) > 3)):                pypi_url = PYPI_URL
             if ((PYPI_USERNAME != None) and (len(PYPI_USERNAME) > 3)):      username = PYPI_USERNAME
             if ((PYPI_PASSWORD != None) and (len(PYPI_PASSWORD) > 3)):      password = PYPI_PASSWORD
 
-            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_username=username, pypi_password=password)
+            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=pypi_url, pypi_username=username, pypi_password=password)
     else:
         print(f"unknown command: '{args[0]}'")
         help()
 
 
-# 2022-03-08 14:24
+# 2022-03-08 16:02
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
