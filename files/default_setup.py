@@ -13,8 +13,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Mike Huls',
-    author_email='m.huls@datanext.nl',
-    url='https://github.com/profile/project',       # UPDATE 
+    author_email='mikehuls42@gmail.com',
+    url='https://github.com/profile/project',       # UPDATE
     project_urls = {                                # Optional
         # "Bug Tracker": "https://github.com/profile/project/issues"
     },

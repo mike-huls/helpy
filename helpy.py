@@ -163,8 +163,6 @@ def replace_in_file(filepath:str, replace_this_text:str, replacment_text:str):
     # Write the file out again
     with open(filepath, 'w') as file:
         file.write(filedata)
-
-
 # endregion
 
 # region ENV
@@ -287,6 +285,10 @@ def docker_system_prune():
         subprocess.call(f"docker system prune -f")
     except Exception as e:
         printout(func=docker_system_prune.__name__, msg=f"Docker system prune failed: '{e}'", doPrint=True)
+def docker_login(docker_username:str, docker_password:str, verbose:bool=False):
+    """ Use the docker image name to log in """
+
+
 
 
 def docker_build(verbose: bool = False):
@@ -338,27 +340,20 @@ def package_build(verbose: bool = False):
     subprocess.call(f"{VENVPY} setup.py sdist")
 
 
-def package_push(verbose: bool = False, force: bool = False, pypi_username: str = None, pypi_password: str = None):
+def package_push(verbose: bool = False, force: bool = False, pypi_url:str=None, pypi_username:str=None, pypi_password:str=None):
     """ Pushes the package to pypi server """
 
     if (not force):
         if (input("Are you sure you want to push the package to PyPi? (y/n)").lower() != 'y'):
             return
 
-    # 1. Ensure username
-    if (pypi_username == None):
-        pypi_username = input("PyPi username")
+    # 1. Ensure username, password and url
+    if (pypi_username == None or len(pypi_username) <= 3):      pypi_username = input("PyPi username")
+    if (pypi_password == None or len(pypi_password) <= 3):      pypi_password = input("PyPi password")
+    if (pypi_url == None or len(pypi_url) <= 3):                pypi_url = input("PyPi url")
 
-    # 2. Ensure password
-    if (pypi_password == None):
-        pypi_password = input("PyPi password")
 
-    # 3. Ensure pypi url is valid
-    if (len(PYPI_URL) <= 3):
-        printout(func=package_push.__name__, msg=f"PYPI_URL is invalid: '{PYPI_URL}'", doPrint=True)
-        return
-
-    # 4. Ensure twine is installed
+    # 2. Ensure twine is installed
     try:
         import twine
     except ImportError as e:
@@ -366,10 +361,10 @@ def package_push(verbose: bool = False, force: bool = False, pypi_username: str 
         subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
         printout(func=package_push.__name__, msg="Successfully installed twine", doPrint=verbose)
 
-    # 4. Call package push
-    printout(func=package_push.__name__, msg=f"Pushing package to '{PYPI_URL}'", doPrint=verbose)
-    subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{PYPI_URL}" -u "{pypi_username}" -p "{pypi_password}"')
-    printout(func=package_push.__name__, msg=f"Successfully pushed package to '{PYPI_URL}'", doPrint=True)
+    # 3. Call package push
+    printout(func=package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=verbose)
+    subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"')
+    printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=True)
 
 
 # endregion
@@ -383,7 +378,7 @@ def main(args: [str]):
 
     # Settings
     DO_FORCE = len({'f', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
-    VERBOSE = len({'v', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
+    VERBOSE = len({'v'} & set(["".join(a.split("-")) for a in args])) > 0
     args = [a for a in args if (a[0] != '-')]
 
     # Check for updates
@@ -438,29 +433,27 @@ def main(args: [str]):
         if (package_op == 'build'):
             package_build(verbose=VERBOSE)
         elif (package_op == 'push'):
-            # 1. Get username and password from args
-            my_username = pop_arg_or_exit(arglist=args, errormessage="[helpy package push] requires another argument. Check out [helpy help] for more information")
-            my_password = pop_arg_or_exit(arglist=args, errormessage="[helpy package push] requires another argument. Check out [helpy help] for more information")
+            # 1. Check if username and password are set
+            username = None
+            password = None
+            if ((PYPI_USERNAME != None) and (len(PYPI_USERNAME) > 3)):      username = PYPI_USERNAME
+            if ((PYPI_PASSWORD != None) and (len(PYPI_PASSWORD) > 3)):      password = PYPI_PASSWORD
 
-            # my_username = PYPI_USERNAME or (cleanargs[0] if (len(cleanargs) >= 1) else None)
-            # my_password = PYPI_PASSWORD or (cleanargs[1] if (len(cleanargs) >= 2) else None)
-            print(VERBOSE, DO_FORCE, my_username, my_password)
-            quit()
-            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_username=my_username, pypi_password=my_password)
+            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_username=username, pypi_password=password)
     else:
         print(f"unknown command: '{args[0]}'")
         help()
 
 
-# 2022-03-07 16:16
+# 2022-03-08 14:24
 if __name__ == "__main__":
     # PYPI
-    PYPI_URL: str = None
     # load_env_vars(env_file_path='config/conf/.env')
+    PYPI_URL: str = None
     PYPI_USERNAME: str = None  # os.environ.get("PYPI_USER")
     PYPI_PASSWORD: str = None  # os.environ.get("PYPI_PASS")
     # DOCKER
-    DOCKER_IMAGE_NAME: str = None
+    DOCKER_IMAGE_NAME: str = "docker-hub.datanext.nl/test/test"
 
     main(sys.argv[1:])
 
