@@ -302,7 +302,7 @@ def pip_freeze(verbose: bool = False):
             subprocess.call([python_location, '-m', 'pip', 'freeze'], stdout=file_)
         printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
     except Exception as e:
-        printout(func=pip_freeze.__name__, msg=f"{pip_freeze.__name__} failed: {e}", doPrint=True)
+        printout(func=pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
 
 
 # endregion
@@ -312,7 +312,7 @@ def serve_fastapi():
     try:
         subprocess.call('venv/scripts/python.exe -m uvicorn main:app --env-file config/conf/.env --reload')
     except Exception as e:
-        printout(func=serve_fastapi.__name__, msg=f"Failed to serve: {e}", doPrint=True)
+        printout(func=serve_fastapi.__name__, msg=f"Serving project with FastAPI failed: \n\t'{e}'", doPrint=True)
 
 
 # endregion
@@ -322,7 +322,7 @@ def docker_system_prune():
     try:
         subprocess.call(f"docker system prune -f")
     except Exception as e:
-        printout(func=docker_system_prune.__name__, msg=f"Docker system prune failed: '{e}'", doPrint=True)
+        printout(func=docker_system_prune.__name__, msg=f"Docker system prune failed: \t\n'{e}'", doPrint=True)
 
 
 def docker_login(docker_username: str, docker_password: str, verbose: bool = False):
@@ -340,7 +340,7 @@ def docker_build(verbose: bool = False):
         docker_system_prune()
         printout(func=docker_build.__name__, msg=f"Successfully built docker image", doPrint=verbose)
     except Exception as e:
-        printout(func=docker_build.__name__, msg=f"Failed to build docker image: '{e}", doPrint=True)
+        printout(func=docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
 
 
 def docker_push(verbose: bool = False, force: bool = False):
@@ -359,7 +359,7 @@ def docker_push(verbose: bool = False, force: bool = False):
         subprocess.call(f'docker push "{DOCKER_IMAGE_NAME}"')
         printout(func=docker_push.__name__, msg=f"Successfully pushed image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
     except Exception as e:
-        printout(func=docker_push.__name__, msg=f"Failed to push docker image: '{e}'", doPrint=True)
+        printout(func=docker_push.__name__, msg=f"Failed to push docker image: \n\t'{e}'", doPrint=True)
 
 
 # endregion
@@ -400,8 +400,12 @@ def package_push(verbose: bool = False, force: bool = False, pypi_url: str = Non
 
     # 3. Call package push
     printout(func=package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=verbose)
-    subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"')
-    printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=True)
+    try:
+        subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"')
+        printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=verbose)
+    except Exception as e:
+        printout(func=package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
+
 
 
 # endregion
