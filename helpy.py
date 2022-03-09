@@ -83,8 +83,9 @@ def help():
     Welcome to Helpy (v.{helpy_cur_version()})
     Call [python helpy.py] with any of the following commands:
         help                        display this message
+        info                        displays information about helpy, including constants you've set
+        version                     displays information about the current version of helpy 
         update                      updates helpy if there is a new version
-        info                        prints out info about helpy, including constants you've set 
         init project                prepares the current folder for a python project
         init package                prepares the current folder for a python package
         freeze                      pip freeze to create requirements.txt
@@ -452,6 +453,8 @@ def main():
         help()
     elif (cmd1 == 'info'):
         display_info()
+    elif (cmd1 in ['version']):
+        print(f"Helpy version {helpy_cur_version()}")
     elif (cmd1 == 'init'):
         # Get init_type
         init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy init] requires another argument. Check out [helpy help] for more information")
@@ -508,7 +511,7 @@ def main():
         help()
 
 
-# 2022-03-09 13:31
+# 2022-03-09 13:38
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
