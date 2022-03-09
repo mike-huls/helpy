@@ -10,8 +10,7 @@ version                     displays information about the current version of he
 update                      updates helpy if there is a new version
 init project                prepares the current folder for a python project
 init package                prepares the current folder for a python package
-freeze                      pip freeze to create requirements.txt
-serve fastapi               tries to spin up the current project as a fastapi project 
+serve [type]                tries to spin up the current project as a fastapi project 
 docker build                builds the image specified in the dockerfile
 docker push                 pushes the image to dockerhub. Set username in .env or from cmd
 package build               uses the setup.py to build the package

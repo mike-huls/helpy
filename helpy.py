@@ -3,7 +3,7 @@ import shutil
 import sys
 import subprocess
 import urllib.request
-
+import pip
 VENVPY = "venv/scripts/python.exe"
 
 
@@ -424,7 +424,7 @@ def main():
     if (len(args) == 0):
         help()
         quit()
-    cmd1 = pop_arg_or_exit(arglist=args, errormessage="Helpy expects at least one argument. Check out [helpy help] for more information")
+    cmd1 = pop_arg_or_exit(arglist=args, errormessage="Helpy expects at least one argument. Check out [helpy.py help] for more information")
 
     # Settings
     DO_FORCE = len({'f', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
@@ -451,7 +451,7 @@ def main():
         print(f"Helpy version {helpy_cur_version()}")
     elif (cmd1 == 'init'):
         # Get init_type
-        init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy init] requires another argument. Check out [helpy help] for more information")
+        init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy.py init] requires another argument. Check out [helpy.py help] for more information")
 
         # Functions
         if (init_type == 'project'):
@@ -465,26 +465,31 @@ def main():
                 package_name = input("What is this package called?")
             init_package(package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         else:
-            printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy help] for more information")
+            printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'serve'):
         # Get application type
-        app_type = pop_arg_or_exit(arglist=args, errormessage="[helpy serve] requires another argument. Check out [helpy help] for more information")
-
-        if (app_type == 'fastapi'):
+        available_apps = ['fastapi']
+        serve_op = pop_arg_or_exit(
+            arglist=args,
+            errormessage="[helpy.py serve] requires another argument. Example: [helpy.py serve <apptype>]. "
+                         "Check out a list of available apps at [helpy.py serve list]")
+        if (serve_op == 'list'):
+            printout(func="helpy", msg=f"Available apps: {available_apps} \t\t Example: [helpy.py serve {available_apps[0]}]")
+        elif (serve_op == 'fastapi'):
             serve_fastapi()
         else:
-            printout(func="helpy", msg=f"Unknown option for [helpy serve]: '{app_type}'. Check out [helpy help] for more information")
+            printout(func="helpy", msg=f"Unknown option for [helpy.py serve]: '{serve_op}'. Check out [helpy.py serve list] for more information")
     elif (cmd1 == 'docker'):
-        docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy docker] requires another argument. Check out [helpy help] for more information")
+        docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py docker] requires another argument. Check out [helpy.py help] for more information")
 
         if (docker_op == 'build'):
             docker_build(verbose=VERBOSE)
         elif (docker_op == 'push'):
             docker_push(force=DO_FORCE, verbose=VERBOSE)
         else:
-            printout(func="helpy", msg=f"Unknown option for [helpy docker]: '{docker_op}'. Check out [helpy help] for more information")
+            printout(func="helpy", msg=f"Unknown option for [helpy.py docker]: '{docker_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'package'):
-        package_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
+        package_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
 
         if (package_op == 'build'):
             package_build(verbose=VERBOSE)
@@ -501,9 +506,9 @@ def main():
                 sys.exit(0)
             package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_password=PYPI_PASSWORD)
         else:
-            printout(func="helpy", msg=f"Unknown option for [helpy package]: '{package_op}'. Check out [helpy help] for more information")
+            printout(func="helpy", msg=f"Unknown option for [helpy.py package]: '{package_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'pip'):
-        pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
+        pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
         if (pip_op == 'install'):
 
             # 1. Check if all required variables are set
@@ -526,13 +531,13 @@ def main():
         elif (pip_op == 'freeze'):
             pip_freeze(verbose=VERBOSE)
         else:
-            printout(func="helpy", msg=f"Unknown option for [helpy pip]: '{pip_op}'. Check out [helpy help] for more information")
+            printout(func="helpy", msg=f"Unknown option for [helpy.py pip]: '{pip_op}'. Check out [helpy.py help] for more information")
     else:
         print(f"unknown command: '{cmd1}'")
         help()
 
 
-# 2022-03-09 14:30
+# 2022-03-09 14:42
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
