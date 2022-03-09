@@ -502,7 +502,6 @@ def main():
             package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_password=PYPI_PASSWORD)
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy package]: '{package_op}'. Check out [helpy help] for more information")
-
     elif (cmd1 == 'pip'):
         pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
         if (pip_op == 'install'):
