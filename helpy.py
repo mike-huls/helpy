@@ -232,7 +232,7 @@ def create_virtualenv(projectfolder: str, verbose: bool = False):
 # endregion
 
 # region INIT
-def init_project(verbose: bool = False, force: bool = False):
+def init_project(verbose: bool = False, force: bool = False, project_name:str="My Project"):
     """ Needs certain files and folder structure always. """
 
     PROJFOLDER = os.getcwd()
@@ -256,8 +256,8 @@ def init_project(verbose: bool = False, force: bool = False):
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_readme.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
-    replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+    download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
+    replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
     download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
@@ -288,7 +288,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_readme.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
     replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
     download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
@@ -424,7 +424,11 @@ def package_push(verbose: bool = False, force: bool = False, pypi_url: str = Non
 # endregion
 
 
-def main(args: [str]):
+def main():
+    """ Parse command line """
+    args = sys.argv[1:]
+
+
     if (len(args) == 0):
         help()
         quit()
@@ -453,11 +457,14 @@ def main(args: [str]):
 
         # Functions
         if (init_type == 'project'):
-            init_project(force=DO_FORCE, verbose=VERBOSE)
+            project_name = args[0] if (len(args) > 0) else None
+            if (not DO_FORCE and project_name == None):
+                project_name = input("Project name?")
+            init_project(force=DO_FORCE, verbose=VERBOSE, project_name=project_name)
         elif (init_type == 'package'):
-            package_name = pop_arg_or_exit(arglist=args, errormessage="[helpy init package] requires another argument: 'package_name'. Example: "
-                                                                      "\n\t[helply init package my_package_name]"
-                                                                      "\n\tCheck out [helpy help] for more information")
+            package_name = args[0] if (len(args) > 0) else None
+            if (not DO_FORCE and package_name == None):
+                package_name = input("What is this package called?")
             init_package(package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy help] for more information")
@@ -500,7 +507,7 @@ def main(args: [str]):
         help()
 
 
-# 2022-03-08 16:42
+# 2022-03-09 11:48
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
@@ -510,6 +517,6 @@ if __name__ == "__main__":
     # DOCKER
     DOCKER_IMAGE_NAME: str = "docker-hub.datanext.nl/test/test"
 
-    main(sys.argv[1:])
+    main()
 
 
