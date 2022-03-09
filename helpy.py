@@ -51,8 +51,6 @@ def update(verbose: bool = False, force: bool = False):
     # Feedback
     remote_idx_dateline = remote_idx_initmainline - 1
     printout(func=update.__name__, msg=f"updated helpy to {remote_lines[remote_idx_dateline].replace('# ', '')}", doPrint=True)
-
-
 def helpy_cur_version():
     NAME_MAIN_STRING = 'if __name__ == "__main__":'
     with open(__file__, 'r') as rfile:
@@ -62,8 +60,6 @@ def helpy_cur_version():
     curfile_date = curfile_lines[curfile_idx_dateline]
     curfile_date = curfile_date.replace("# ", "")
     return curfile_date
-
-
 def display_info():
     helpy_version = helpy_cur_version()
     printout(func="info", msg=f"""
@@ -76,8 +72,6 @@ def display_info():
         DOCKER:
         image name: \t {DOCKER_IMAGE_NAME if (DOCKER_IMAGE_NAME) else ""}
     """, doPrint=True)
-
-
 def help():
     helpmessage = f"""
     Welcome to Helpy (v.{helpy_cur_version()})
@@ -94,6 +88,7 @@ def help():
         docker push                 pushes the image to dockerhub. Set username in .env or from cmd
         package build               uses the setup.py to build the package
         package push                pushes the package to the pypi specified in the .env
+        pip install [packagename]   installes a package using pypi OR the pypi specified in helpy (PYPI_URL)
 
     Add the -v flag for verbose output
     Add the -y or -f flag to confirm all dialogs"""
@@ -107,7 +102,7 @@ def pop_arg_or_exit(arglist: [str], errormessage: str):
     """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
     if (len(arglist) <= 0):
         printout(func="helpy", msg=f"{errormessage}", doPrint=True)
-        sys.exit(1)
+        sys.exit(0)
     return arglist.pop(0).lower()
 
 
@@ -206,12 +201,8 @@ def load_env_vars(env_file_path: str = None) -> None:
         subprocess.call(f"{VENVPY} -m pip install python-dotenv --upgrade")
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=env_file_path)
-
-
 def venv_exists() -> bool:
     return os.path.isfile(VENVPY)
-
-
 def create_virtualenv(projectfolder: str, verbose: bool = False):
     """ Creates a virtual environment in a project folder """
 
@@ -392,19 +383,12 @@ def package_build(verbose: bool = False):
     except ImportError as e:
         subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
     subprocess.call(f"{VENVPY} setup.py sdist")
-
-
-def package_push(verbose: bool = False, force: bool = False, pypi_url: str = None, pypi_username: str = None, pypi_password: str = None):
+def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose: bool = False, force: bool = False):
     """ Pushes the package to pypi server """
 
     if (not force):
         if (input("Are you sure you want to push the package to PyPi? (y/n)").lower() != 'y'):
             return
-
-    # 1. Ensure username, password and url
-    if (pypi_username == None or len(pypi_username) <= 3):      pypi_username = input("PyPi username")
-    if (pypi_password == None or len(pypi_password) <= 3):      pypi_password = input("PyPi password")
-    if (pypi_url == None or len(pypi_url) <= 3):                pypi_url = input("PyPi url")
 
     # 2. Ensure twine is installed
     try:
@@ -421,8 +405,14 @@ def package_push(verbose: bool = False, force: bool = False, pypi_url: str = Non
         printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=verbose)
     except Exception as e:
         printout(func=package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
+def install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False, force:bool=False):
+    """ Installs a package using your custom pypi url that you specified in the settings of helpy """
 
-
+    printout(func=f"{install_package.__name__}", msg=f"Installing package {package_name}", doPrint=verbose)
+    pypi_url_split = pypi_url.split("://")[1]
+    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {package_name} --upgrade"
+    subprocess.call(cmd)
+    printout(func=f"{install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
 # endregion
 
 
@@ -448,12 +438,16 @@ def main():
 
     # Regular functions
     if (cmd1 == 'update'):
+        #
         update(force=True, verbose=VERBOSE)
     elif (cmd1 == 'help'):
+        #
         help()
     elif (cmd1 == 'info'):
+        #
         display_info()
-    elif (cmd1 in ['version']):
+    elif (cmd1 == 'version'):
+        #
         print(f"Helpy version {helpy_cur_version()}")
     elif (cmd1 == 'init'):
         # Get init_type
@@ -498,28 +492,52 @@ def main():
         if (package_op == 'build'):
             package_build(verbose=VERBOSE)
         elif (package_op == 'push'):
-            # 1. Check if username and password are set
-            username = None
-            password = None
-            if ((PYPI_URL != None) and (len(PYPI_URL) > 3)):                pypi_url = PYPI_URL
-            if ((PYPI_USERNAME != None) and (len(PYPI_USERNAME) > 3)):      username = PYPI_USERNAME
-            if ((PYPI_PASSWORD != None) and (len(PYPI_PASSWORD) > 3)):      password = PYPI_PASSWORD
+            # 1. Check if all variables are set
+            if (len(str(PYPI_URL)) <= 5):
+                printout(func="push", msg="Please set PyPi Url in helpy.py")
+                sys.exit(0)
+            if (len(str(PYPI_USERNAME)) <= 5):
+                printout(func="push", msg="Please set PyPi Username in helpy.py")
+                sys.exit(0)
+            if (len(str(PYPI_PASSWORD)) <= 5):
+                printout(func="push", msg="Please set PyPi Password in helpy.py")
+                sys.exit(0)
+            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_password=PYPI_PASSWORD)
+    elif (cmd1 == 'pip'):
+        pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
+        if (pip_op == 'install'):
 
-            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=pypi_url, pypi_username=username, pypi_password=password)
+            # 1. Check if all required variables are set
+            if (len(str(PYPI_URL)) <= 5):
+                printout(func="push", msg="Please set PyPi Url in helpy.py")
+                sys.exit(0)
+            if (len(str(PYPI_USERNAME)) <= 5):
+                printout(func="push", msg="Please set PyPi Username in helpy.py")
+                sys.exit(0)
+            if (len(str(PYPI_PASSWORD)) <= 5):
+                printout(func="push", msg="Please set PyPi Password in helpy.py")
+                sys.exit(0)
+            # 2. Package name should be set or taken from input
+            package_name = args[0] if (len(args) > 0) else None
+            if (package_name == None):
+                printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
+                package_name = input("Install which package?")
+
+            install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
     else:
         print(f"unknown command: '{cmd1}'")
         help()
 
 
-# 2022-03-09 13:40
+# 2022-03-09 14:25
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
-    PYPI_URL: str = None
-    PYPI_USERNAME: str = None  # os.environ.get("PYPI_USER")
-    PYPI_PASSWORD: str = None  # os.environ.get("PYPI_PASS")
+    PYPI_URL: str = None # os.environ.get("PYPI_URL")
+    PYPI_USERNAME: str = None # os.environ.get("PYPI_USER")
+    PYPI_PASSWORD: str = None # os.environ.get("PYPI_PASS")
     # DOCKER
-    DOCKER_IMAGE_NAME: str = "docker-hub.datanext.nl/test/test"
+    DOCKER_IMAGE_NAME: str = "docker-hub.mywebsite.com/project/package"
 
     main()
 

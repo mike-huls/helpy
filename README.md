@@ -16,5 +16,7 @@ docker build                builds the image specified in the dockerfile
 docker push                 pushes the image to dockerhub. Set username in .env or from cmd
 package build               uses the setup.py to build the package
 package push                pushes the package to the pypi specified in the .env
+pip install [packagename]   installes a package using pypi OR the pypi specified in helpy (PYPI_URL)
+
 ```
 
