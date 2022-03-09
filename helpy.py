@@ -236,7 +236,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     """ Needs certain files and folder structure always. """
 
     PROJFOLDER = os.getcwd()
-    printout(func=init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=verbose)
+    printout(func=init_project.__name__, msg=f"Initializing new project '{project_name}' at {PROJFOLDER}..", doPrint=verbose)
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
     # Create venv
