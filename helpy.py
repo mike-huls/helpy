@@ -13,7 +13,7 @@ def update(verbose: bool = False, force: bool = False):
 
     printout(func=update.__name__, msg='updating helpy..', doPrint=verbose)
 
-    GIST_URL = "https://raw.githubusercontent.com/mike-huls/helpy/main/helpy.py"
+    REMOTE_URL = "https://raw.githubusercontent.com/mike-huls/helpy/main/helpy.py"
     NAME_MAIN_STRING = 'if __name__ == "__main__":'
 
     # 1. Get content current file from "__name__ == __main__"
@@ -25,15 +25,15 @@ def update(verbose: bool = False, force: bool = False):
     curfile_initmain = "\n".join(curfile_lines[curfile_idx_namemainline:])
 
     # 2. Get new content
-    gist_lines = getrequest(url=GIST_URL).split("\n")
-    gist_idx_initmainline = gist_lines.index(NAME_MAIN_STRING)
-    gist_idx_dateline = gist_idx_initmainline - 1
-    gist_date = gist_lines[gist_idx_dateline]
-    gist_content = "\n".join(gist_lines[:gist_idx_initmainline])
+    remote_lines = getrequest(url=REMOTE_URL).split("\n")
+    remote_idx_initmainline = remote_lines.index(NAME_MAIN_STRING)
+    remote_idx_dateline = remote_idx_initmainline - 1
+    remote_date = remote_lines[remote_idx_dateline]
+    remote_content = "\n".join(remote_lines[:remote_idx_initmainline])
 
     # 3. If we don't force: compare. Are we up to date?
     if (not force):
-        helpy_up_to_date = curfile_date == gist_date
+        helpy_up_to_date = curfile_date == remote_date
         if (helpy_up_to_date):
             if (verbose):
                 printout(func=update.__name__, msg="Helpy is up to date", doPrint=True)
@@ -44,13 +44,13 @@ def update(verbose: bool = False, force: bool = False):
                 return
 
     # 3. Combine and write
-    newHelpy = gist_content + "\n" + curfile_initmain
+    newHelpy = remote_content + "\n" + curfile_initmain
     with open(__file__, 'w') as file:
         file.write(newHelpy)
 
     # Feedback
-    gist_idx_dateline = gist_idx_initmainline - 1
-    printout(func=update.__name__, msg=f"updated helpy to {gist_lines[gist_idx_dateline].replace('# ', '')}", doPrint=True)
+    remote_idx_dateline = remote_idx_initmainline - 1
+    printout(func=update.__name__, msg=f"updated helpy to {remote_lines[remote_idx_dateline].replace('# ', '')}", doPrint=True)
 
 
 def helpy_cur_version():
@@ -507,7 +507,7 @@ def main():
         help()
 
 
-# 2022-03-09 13:24
+# 2022-03-09 13:27
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
