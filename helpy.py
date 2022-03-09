@@ -76,20 +76,21 @@ def help():
     helpmessage = f"""
     Welcome to Helpy (v.{helpy_cur_version()})
     Call [python helpy.py] with any of the following commands:
-        help                        display this message
-        info                        displays information about helpy, including constants you've set
-        version                     displays information about the current version of helpy 
-        update                      updates helpy if there is a new version
-        init project                prepares the current folder for a python project
-        init package                prepares the current folder for a python package
-        freeze                      pip freeze to create requirements.txt
-        serve fastapi               tries to spin up the current project as a fastapi project 
-        docker build                builds the image specified in the dockerfile
-        docker push                 pushes the image to dockerhub. Set username in .env or from cmd
-        package build               uses the setup.py to build the package
-        package push                pushes the package to the pypi specified in the .env
-        pip install [packagename]   installes a package using pypi OR the pypi specified in helpy (PYPI_URL)
-
+        help                            display this message
+        info                            displays information about helpy, including constants you've set
+        version                         displays information about the current version of helpy 
+        update                          updates helpy if there is a new version
+        init project                    prepares the current folder for a python project
+        init package                    prepares the current folder for a python package
+        freeze                          pip freeze to create requirements.txt
+        serve fastapi                   tries to spin up the current project as a fastapi project 
+        docker build                    builds the image specified in the dockerfile
+        docker push                     pushes the image to dockerhub. Set username in .env or from cmd
+        package build                   uses the setup.py to build the package
+        package push                    pushes the package to the pypi specified in the .env
+        pip install [packagename]       installs a package using pypi OR the pypi specified in helpy (PYPI_URL)
+        pip install requirements.txt    installs a requirements.txt file using pypi OR the pypi specified in the helpy (PYPI_URL)
+        pip freeze                      freezes all dependencies in a requirements.txt
     Add the -v flag for verbose output
     Add the -y or -f flag to confirm all dialogs"""
     printout(func="help", msg=helpmessage, doPrint=True)
@@ -401,6 +402,14 @@ def install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_n
     cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {package_name} --upgrade"
     subprocess.call(cmd)
     printout(func=f"{install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
+def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False, force:bool=False):
+    """ Installs all packages in the requirements.txt file """
+
+    printout(func=f"{install_package.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
+    pypi_url_split = pypi_url.split("://")[1]
+    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} -r requirements.txt --upgrade"
+    subprocess.call(cmd)
+    printout(func=f"{install_package.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
 # endregion
 
 
@@ -509,13 +518,19 @@ def main():
             if (len(str(PYPI_PASSWORD)) <= 5):
                 printout(func="push", msg="Please set PyPi Password in helpy.py")
                 sys.exit(0)
-            # 2. Package name should be set or taken from input
-            package_name = args[0] if (len(args) > 0) else None
-            if (package_name == None):
-                printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
-                package_name = input("Install which package?")
 
-            install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+            if ('requirements.txt' in " ".join(args)):
+                install_requirementstxt(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, verbose=VERBOSE, force=DO_FORCE)
+            else:
+                # 2. Package name should be set or taken from input
+                package_name = args[0] if (len(args) > 0) else None
+                if (package_name == None):
+                    printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
+                    package_name = input("Install which package?")
+                install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+
+
+
         elif (pip_op == 'freeze'):
             pip_freeze(verbose=VERBOSE)
         else:
@@ -529,9 +544,9 @@ def main():
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
-    PYPI_URL: str = None # os.environ.get("PYPI_URL")
-    PYPI_USERNAME: str = None # os.environ.get("PYPI_USER")
-    PYPI_PASSWORD: str = None # os.environ.get("PYPI_PASS")
+    PYPI_URL: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_URL")
+    PYPI_USERNAME: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_USER")
+    PYPI_PASSWORD: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_PASS")
     # DOCKER
     DOCKER_IMAGE_NAME: str = "docker-hub.mywebsite.com/project/package"
 
