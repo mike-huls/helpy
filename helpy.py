@@ -103,7 +103,6 @@ def pop_arg_or_exit(arglist: [str], errormessage: str):
         printout(func="helpy", msg=f"{errormessage}", doPrint=True)
         sys.exit(0)
     return arglist.pop(0).lower()
-
 def prompt_sure(prompt_text: str) -> None:
     def outer_wrapper(func):
         def wrapper(*args, **kwargs):
@@ -114,19 +113,16 @@ def prompt_sure(prompt_text: str) -> None:
         return wrapper
 
     return outer_wrapper
-
 def prompt_yesno(prompt_text: str) -> None:
     if (input(prompt_text).lower() != 'y'):
         print("exiting..")
         exit(0)
-
 def getrequest(url: str) -> str:
     httprequest = urllib.request.Request(url, data={}, headers={}, method="GET")
     with urllib.request.urlopen(httprequest) as httpresponse:
         if (httpresponse.status != 200):
             raise ValueError("Error in request, status code not 200")
         return httpresponse.read().decode(httpresponse.headers.get_content_charset("utf-8"))
-
 def printout(msg: str, func: str = None, doPrint: bool = True):
     buffer = 20 - (0 if (func == None) else len(func))
     if (buffer <= 1):
@@ -135,19 +131,16 @@ def printout(msg: str, func: str = None, doPrint: bool = True):
     if (doPrint):
         func_str = "" if (func == None) else f"{func}"
         print(f"[Helpy] {func_str}{' ' * buffer}{msg} ")
-
 def create_folder(folderpath: str, verbose: bool = False):
     if (os.path.exists(folderpath)):
         printout(func=create_folder.__name__, msg=f"Folder {folderpath} already exists. Skipping..", doPrint=verbose)
         return
     os.mkdir(path=folderpath)
     printout(func=create_folder.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
-
 def remove_folder(folderpath: str, verbose: bool = False):
     if (os.path.isdir(folderpath)):
         shutil.rmtree(folderpath)
     printout(func=remove_folder.__name__, msg=f"Folder {folderpath} removed", doPrint=verbose)
-
 def download_file(url: str, filepath: str, verbose: bool = False, overwrite: bool = False):
     """ download a file from a url to the given file path """
 
@@ -157,7 +150,6 @@ def download_file(url: str, filepath: str, verbose: bool = False, overwrite: boo
             return
     with open(filepath, 'w') as file:
         file.write(getrequest(url=url))
-
 def create_empty_file(filepath: str, verbose: bool = False, overwrite: bool = False):
     """ Creates an empty file if not exists """
 
@@ -167,7 +159,6 @@ def create_empty_file(filepath: str, verbose: bool = False, overwrite: bool = Fa
             return
     with open(filepath, 'w') as file:
         file.write("")
-
 def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str):
     """ Replaces a text with the replacement text in a text file """
     with open(filepath, 'r') as file:
@@ -297,7 +288,26 @@ def pip_freeze(verbose: bool = False):
 # endregion
 
 # region FASTAPI
-def serve_fastapi():
+def serve_fastapi(verbose:bool=False):
+    """ Makes it so that you can serve fastapi"""
+
+    # 1. Ensure Fastapi is installed
+    try:
+        import fastapi
+        printout(func=serve_fastapi.__name__, msg="fastpi not installed; installing..", doPrint=verbose)
+    except ImportError as e:
+        subprocess.call("venv/scripts/python.exe -m pip install fastapi --upgrade")
+        printout(func=serve_fastapi.__name__, msg="Installed fastapi", doPrint=verbose)
+
+    # 2. Ensure uvicorn is installed
+    try:
+        import uvicorn
+        printout(func=serve_fastapi.__name__, msg="uvicorn not installed; installing..", doPrint=verbose)
+    except ImportError as e:
+        subprocess.call("venv/scripts/python.exe -m pip install uvicorn --upgrade")
+        printout(func=serve_fastapi.__name__, msg="Installed uvicorn", doPrint=verbose)
+
+    # 3. Serve fastapi on uvicorn
     try:
         subprocess.call('venv/scripts/python.exe -m uvicorn main:app --env-file config/conf/.env --reload')
     except Exception as e:
@@ -540,7 +550,7 @@ def main():
         help()
 
 
-# 2022-03-09 15:32
+# 2022-03-09 15:45
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
