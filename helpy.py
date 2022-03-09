@@ -93,8 +93,6 @@ def help():
     Add the -v flag for verbose output
     Add the -y or -f flag to confirm all dialogs"""
     printout(func="help", msg=helpmessage, doPrint=True)
-
-
 # endregion
 
 # region UTIL
