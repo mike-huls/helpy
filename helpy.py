@@ -507,11 +507,11 @@ def main():
 
             package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=pypi_url, pypi_username=username, pypi_password=password)
     else:
-        print(f"unknown command: '{args[0]}'")
+        print(f"unknown command: '{cmd1}'")
         help()
 
 
-# 2022-03-09 13:38
+# 2022-03-09 13:40
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
