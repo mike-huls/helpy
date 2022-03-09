@@ -257,6 +257,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
+
     replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
     download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
 
@@ -458,12 +459,12 @@ def main():
         # Functions
         if (init_type == 'project'):
             project_name = args[0] if (len(args) > 0) else None
-            if (not DO_FORCE and project_name == None):
+            if (project_name == None):
                 project_name = input("Project name?")
             init_project(force=DO_FORCE, verbose=VERBOSE, project_name=project_name)
         elif (init_type == 'package'):
             package_name = args[0] if (len(args) > 0) else None
-            if (not DO_FORCE and package_name == None):
+            if (package_name == None):
                 package_name = input("What is this package called?")
             init_package(package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         else:
@@ -507,7 +508,7 @@ def main():
         help()
 
 
-# 2022-03-09 13:27
+# 2022-03-09 13:31
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
