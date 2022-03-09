@@ -103,7 +103,6 @@ def pop_arg_or_exit(arglist: [str], errormessage: str):
         sys.exit(0)
     return arglist.pop(0).lower()
 
-
 def prompt_sure(prompt_text: str) -> None:
     def outer_wrapper(func):
         def wrapper(*args, **kwargs):
@@ -115,12 +114,10 @@ def prompt_sure(prompt_text: str) -> None:
 
     return outer_wrapper
 
-
 def prompt_yesno(prompt_text: str) -> None:
     if (input(prompt_text).lower() != 'y'):
         print("exiting..")
         exit(0)
-
 
 def getrequest(url: str) -> str:
     httprequest = urllib.request.Request(url, data={}, headers={}, method="GET")
@@ -128,7 +125,6 @@ def getrequest(url: str) -> str:
         if (httpresponse.status != 200):
             raise ValueError("Error in request, status code not 200")
         return httpresponse.read().decode(httpresponse.headers.get_content_charset("utf-8"))
-
 
 def printout(msg: str, func: str = None, doPrint: bool = True):
     buffer = 20 - (0 if (func == None) else len(func))
@@ -139,7 +135,6 @@ def printout(msg: str, func: str = None, doPrint: bool = True):
         func_str = "" if (func == None) else f"{func}"
         print(f"[Helpy] {func_str}{' ' * buffer}{msg} ")
 
-
 def create_folder(folderpath: str, verbose: bool = False):
     if (os.path.exists(folderpath)):
         printout(func=create_folder.__name__, msg=f"Folder {folderpath} already exists. Skipping..", doPrint=verbose)
@@ -147,12 +142,10 @@ def create_folder(folderpath: str, verbose: bool = False):
     os.mkdir(path=folderpath)
     printout(func=create_folder.__name__, msg=f"Folder {folderpath} created", doPrint=verbose)
 
-
 def remove_folder(folderpath: str, verbose: bool = False):
     if (os.path.isdir(folderpath)):
         shutil.rmtree(folderpath)
     printout(func=remove_folder.__name__, msg=f"Folder {folderpath} removed", doPrint=verbose)
-
 
 def download_file(url: str, filepath: str, verbose: bool = False, overwrite: bool = False):
     """ download a file from a url to the given file path """
@@ -164,7 +157,6 @@ def download_file(url: str, filepath: str, verbose: bool = False, overwrite: boo
     with open(filepath, 'w') as file:
         file.write(getrequest(url=url))
 
-
 def create_empty_file(filepath: str, verbose: bool = False, overwrite: bool = False):
     """ Creates an empty file if not exists """
 
@@ -174,7 +166,6 @@ def create_empty_file(filepath: str, verbose: bool = False, overwrite: bool = Fa
             return
     with open(filepath, 'w') as file:
         file.write("")
-
 
 def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str):
     """ Replaces a text with the replacement text in a text file """
@@ -187,8 +178,6 @@ def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str)
     # Write the file out again
     with open(filepath, 'w') as file:
         file.write(filedata)
-
-
 # endregion
 
 # region ENV
@@ -245,6 +234,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(PROJFOLDER, 'main.py'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
 
@@ -535,7 +525,7 @@ def main():
         help()
 
 
-# 2022-03-09 14:42
+# 2022-03-09 15:00
 if __name__ == "__main__":
     # PYPI
     # load_env_vars(env_file_path='config/conf/.env')
