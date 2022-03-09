@@ -466,9 +466,6 @@ def main():
             init_package(package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy help] for more information")
-    elif (cmd1 == 'freeze'):
-        # pip freeze
-        pip_freeze(verbose=VERBOSE)
     elif (cmd1 == 'serve'):
         # Get application type
         app_type = pop_arg_or_exit(arglist=args, errormessage="[helpy serve] requires another argument. Check out [helpy help] for more information")
@@ -503,6 +500,9 @@ def main():
                 printout(func="push", msg="Please set PyPi Password in helpy.py")
                 sys.exit(0)
             package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_password=PYPI_PASSWORD)
+        else:
+            printout(func="helpy", msg=f"Unknown option for [helpy package]: '{package_op}'. Check out [helpy help] for more information")
+
     elif (cmd1 == 'pip'):
         pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy package] requires another argument. Check out [helpy help] for more information")
         if (pip_op == 'install'):
@@ -524,6 +524,10 @@ def main():
                 package_name = input("Install which package?")
 
             install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+        elif (pip_op == 'freeze'):
+            pip_freeze(verbose=VERBOSE)
+        else:
+            printout(func="helpy", msg=f"Unknown option for [helpy pip]: '{pip_op}'. Check out [helpy help] for more information")
     else:
         print(f"unknown command: '{cmd1}'")
         help()
