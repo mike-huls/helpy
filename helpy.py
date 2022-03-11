@@ -1,3 +1,4 @@
+from dataclasses import dataclass, asdict
 import os
 import shutil
 import sys
@@ -98,6 +99,8 @@ def help():
 # endregion
 
 # region UTIL
+def prompt_yes(promptmessage:str) -> bool:
+    return input(promptmessage).lower().strip() == 'y'
 def pop_arg_or_exit(arglist: [str], errormessage: str):
     """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
     if (len(arglist) <= 0):
@@ -160,12 +163,18 @@ def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str)
 # endregion
 
 # region ENV
-def load_env_vars(env_file_path: str = None, verbose:bool=False) -> None:
-    install_package(package_name='python-dotenv', prompt_sure=True, verbose=verbose)
-    # try:
-    #     from dotenv import load_dotenv
-    # except ImportError as e:
-    #     subprocess.call(f"{VENVPY} -m pip install python-dotenv --upgrade")
+def load_env_vars(env_file_path: str = None, verbose:bool=False, force:bool=False) -> None:
+
+
+    if (not venv_exists()):
+        this_dir = os.getcwd()
+        if (not force):
+            if (not prompt_yes(promptmessage=f"No venv detected in this directory ({this_dir}). Create venv? (y/n)")):
+                printout(func=load_env_vars.__name__, msg="Exiting..", doPrint=verbose)
+                return
+        create_virtualenv(projectfolder=this_dir, verbose=verbose)
+
+    install_package(package_name='python-dotenv', import_package_name='dotenv', prompt_sure=True, python_location=VENVPY, verbose=verbose)
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=env_file_path)
 def venv_exists() -> bool:
@@ -192,54 +201,16 @@ def create_virtualenv(projectfolder: str, verbose: bool = False):
 # endregion
 
 # region INIT
-def init_project(verbose: bool = False, force: bool = False, project_name:str="My Project"):
-    """ Needs certain files and folder structure always. """
-
+def init_helpy(verbose:bool=False, force:bool=False):
+    """ """
     PROJFOLDER = os.getcwd()
-    printout(func=init_project.__name__, msg=f"Initializing new project '{project_name}' at {PROJFOLDER}..", doPrint=verbose)
+    printout(func=init_helpy.__name__, msg=f"Initializing helpy at {PROJFOLDER}..", doPrint=verbose)
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
     # Create venv
-    printout(func=init_project.__name__, msg=f"Initializing venv..", doPrint=verbose)
+    printout(func=init_helpy.__name__, msg=f"Initializing venv..", doPrint=verbose)
     create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
-    printout(func=init_project.__name__, msg=f"Initialized venv", doPrint=verbose)
-
-    # config/conf/.env
-    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
-    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
-    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
-    download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
-
-    # default folders
-    create_folder(folderpath=os.path.join(PROJFOLDER, 'services'), verbose=verbose)
-
-    # Create default files (with content)
-    download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(PROJFOLDER, 'main.py'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
-
-    replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
-    download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
-
-    printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
-
-
-def init_package(package_name: str, verbose: bool = False, force: bool = False):
-    """ Get files and folder structure"""
-    PROJFOLDER = os.getcwd()
-    printout(func=init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=verbose)
-    FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
-
-    # Create venv
-    printout(func=init_project.__name__, msg=f"Initializing venv..", doPrint=verbose)
-    create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
-    printout(func=init_project.__name__, msg=f"Initialized venv", doPrint=verbose)
-
-    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
-    # Create module folder with __init__.py
-    create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
-    create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
+    printout(func=init_helpy.__name__, msg=f"Initialized venv", doPrint=verbose)
 
     # config/conf/.env
     create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
@@ -251,15 +222,41 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
-    replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+
+    # Create .helpy settings file
+    download_file(url=f"{FILES_URL}/default_.helpy", filepath=os.path.join(PROJFOLDER, '.helpy'), verbose=verbose, overwrite=force)
+    printout(func=init_helpy.__name__, msg=f"Initialized helpy. Don't forget to activate the new venv", doPrint=verbose)
+
+def init_project(verbose: bool = False, force: bool = False, project_name:str="My Project"):
+    """ Needs certain files and folder structure always. """
+
+    PROJFOLDER = os.getcwd()
+    printout(func=init_project.__name__, msg=f"Initializing new project '{project_name}' at {PROJFOLDER}..", doPrint=verbose)
+    FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
+
+    # Create default files (with content)
+    download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(PROJFOLDER, 'main.py'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
+
+    printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
+def init_package(package_name: str, verbose: bool = False, force: bool = False):
+    """ Get files and folder structure"""
+    PROJFOLDER = os.getcwd()
+    printout(func=init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=verbose)
+    FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
+
+
+    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
+    # Create module folder with __init__.py
+    create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
+
     download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
     replace_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
 
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
-
-
 # endregion
 
 # region SERVE
@@ -394,7 +391,7 @@ def pip_freeze(verbose: bool = False):
         printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
     except Exception as e:
         printout(func=pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
-def pip_install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False):
+def pip_install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False, force:bool=False):
     """ Installs a package using your custom pypi url that you specified in the settings of helpy """
 
     printout(func=f"{pip_install_package.__name__}", msg=f"Installing package {package_name}", doPrint=verbose)
@@ -402,7 +399,7 @@ def pip_install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, packa
     cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {package_name} --upgrade"
     subprocess.call(cmd)
     printout(func=f"{pip_install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
-def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False):
+def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False, force:bool=False):
     """ Installs all packages in the requirements.txt file """
 
     printout(func=f"{pip_install_package.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
@@ -425,13 +422,6 @@ def pip_list() -> None:
     print(output, err, rc)
 def install_package_globally(package_name:str, import_package_name:str=None, prompt_sure:bool=False, verbose:bool=False, force:bool=False) -> None:
     """ Installs a package globally, NOT in the project venv """
-    # Check if already installed
-
-    # Check if we need to ask for confirmation
-    if (prompt_sure):
-        if (input(f"Are you sure you want to install package '{package_name}'? (y/n)").lower().strip() != 'y'):
-            printout(func=install_package_globally.__name__, msg=f"Exiting..", doPrint=verbose)
-            return
 
     # Check if the package is already installed
     if (not force):
@@ -443,6 +433,13 @@ def install_package_globally(package_name:str, import_package_name:str=None, pro
         if (already_installed):
             printout(func=install_package_globally.__name__, msg=f"Package {package_name} already installed. Skipping..", doPrint=verbose)
             return
+
+    # Check if we need to ask for confirmation
+    if (prompt_sure):
+        if (input(f"Are you sure you want to install package '{package_name}'? (y/n)").lower().strip() != 'y'):
+            printout(func=install_package_globally.__name__, msg=f"Exiting..", doPrint=verbose)
+            return
+
 
     # Install
     printout(func=install_package_globally.__name__, msg=f"Installing {package_name}..", doPrint=verbose)
@@ -453,10 +450,6 @@ def install_package(package_name:str, import_package_name:str=None, python_locat
     """ Calls pip module using the python location to install the package name"""
     printout(func=install_package.__name__, msg=f"Installing {package_name}..", doPrint=verbose)
 
-    if (prompt_sure):
-        if (input(f"Install package {package_name}? (y/n)").lower().strip() != 'y'):
-            printout(func=install_package.__name__, msg=f"Exiting..", doPrint=verbose)
-
     # Check if the package is already installed
     if (not force):
         already_installed = package_is_installed(package_name=package_name)
@@ -468,7 +461,15 @@ def install_package(package_name:str, import_package_name:str=None, python_locat
             printout(func=install_package_globally.__name__, msg=f"Package {package_name} already installed. Skipping..", doPrint=verbose)
             return
 
+
+    if (prompt_sure):
+        if (input(f"Install package {package_name}? (y/n)").lower().strip() != 'y'):
+            printout(func=install_package.__name__, msg=f"Exiting..", doPrint=verbose)
+
+
+    python_location = os.path.join(os.getcwd(), python_location)
     cmd:str = f"{python_location} -m pip install {package_name} --upgrade"
+    print(cmd)
     res = subprocess.call(cmd)
     printout(func=install_package.__name__, msg=f"Installed {package_name}", doPrint=verbose)
 # endregion
@@ -512,7 +513,10 @@ def main():
         init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy.py init] requires another argument. Check out [helpy.py help] for more information")
 
         # Functions
-        if (init_type == 'project'):
+        if (init_type == 'helpy'):
+            #
+            init_helpy(verbose=VERBOSE, force=DO_FORCE)
+        elif (init_type == 'project'):
             project_name = args[0] if (len(args) > 0) else None
             if (project_name == None):
                 project_name = input("Project name?")
@@ -550,45 +554,49 @@ def main():
         package_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
 
         if (package_op == 'build'):
+            #
             package_build(verbose=VERBOSE)
         elif (package_op == 'push'):
+            settings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
+
             # 1. Check if all variables are set
-            if (len(str(PYPI_URL)) <= 5):
+            if (len(str(settings.pypi_url)) <= 5):
                 printout(func="push", msg="Please set PyPi Url in helpy.py")
                 sys.exit(0)
-            if (len(str(PYPI_USERNAME)) <= 5):
+            if (len(str(settings.pypi_username)) <= 5):
                 printout(func="push", msg="Please set PyPi Username in helpy.py")
                 sys.exit(0)
-            if (len(str(PYPI_PASSWORD)) <= 5):
+            if (len(str(settings.pypi_password)) <= 5):
                 printout(func="push", msg="Please set PyPi Password in helpy.py")
                 sys.exit(0)
-            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_password=PYPI_PASSWORD)
+            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_password=settings.pypi_password)
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py package]: '{package_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'pip'):
         pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
         if (pip_op == 'install'):
+            settings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
 
             # 1. Check if all required variables are set
-            if (len(str(PYPI_URL)) <= 5):
+            if (len(str(settings.pypi_url)) <= 5):
                 printout(func="push", msg="Please set PyPi Url in helpy.py")
                 sys.exit(0)
-            if (len(str(PYPI_USERNAME)) <= 5):
+            if (len(str(settings.pypi_username)) <= 5):
                 printout(func="push", msg="Please set PyPi Username in helpy.py")
                 sys.exit(0)
-            if (len(str(PYPI_PASSWORD)) <= 5):
+            if (len(str(settings.pypi_password)) <= 5):
                 printout(func="push", msg="Please set PyPi Password in helpy.py")
                 sys.exit(0)
 
             if ('requirements.txt' in " ".join(args)):
-                install_requirementstxt(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, verbose=VERBOSE, force=DO_FORCE)
+                install_requirementstxt(pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_pasword=settings.pypi_password, verbose=VERBOSE, force=DO_FORCE)
             else:
                 # 2. Package name should be set or taken from input
                 package_name = args[0] if (len(args) > 0) else None
                 if (package_name == None):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     package_name = input("Install which package?")
-                pip_install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+                pip_install_package(pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_pasword=settings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
 
 
 
@@ -601,22 +609,81 @@ def main():
         help()
 
 
-# 2022-03-09 15:45
+@dataclass
+class HelpySettings:
+    env_file_path:str = None
+    pypi_url:str = None
+    pypi_username:str = None
+    pypi_password:str = None
+    docker_image_name:str = None
+
+def helpy_is_initialized():
+    return '.helpy' in os.listdir(PROJECT_DIR)
+def read_helpy_settings(verbose:bool=False, force:bool=False):
+    """ """
+
+    # 1. Is helpy initialized?
+    if (not helpy_is_initialized()):
+        if (not force):
+            if (not prompt_yes(promptmessage=f"Helpy is not initialized. Initialize helpy at {PROJECT_DIR}? (y/n)")):
+                printout(func=read_helpy_settings.__name__, msg="Exiting..", doPrint=verbose)
+                return
+        init_helpy(verbose=verbose, force=force)
+
+    # 2. REad the .helpy file
+    helpysettings_path = os.path.join(PROJECT_DIR, '.helpy')
+
+    # 3. Load .helpy into a HelpySettings object
+    helpySettings:HelpySettings = HelpySettings()
+    helpySettings_lines:[str] = []
+    with open(helpysettings_path) as file:
+        helpySettings_lines = [l.replace("\n", "") for l in file.readlines() if l[0] != "#"]
+    for line in helpySettings_lines:
+        # Reading and cleanup
+        k,v = line.split("=")
+        k = k.upper()
+        for ch in ["'", '"']:
+            if (v[0] == ch):    v = v[1:]
+            if (v[-1] == ch):   v = v[:-1]
+
+        # Add to helySettings
+        if (k == 'ENV_FILE_PATH'):          helpySettings.env_file_path = v
+        elif (k == 'PYPI_URL'):             helpySettings.pypi_url = v
+        elif (k == 'PYPI_USERNAME'):        helpySettings.pypi_username = v
+        elif (k == 'PYPI_PASSWORD'):        helpySettings.pypi_password = v
+        elif (k == 'DOCKER_IMAGE_NAME'):    helpySettings.docker_image_name = v
+
+    # 4. Load variables from env var if required
+    if ('${' in "".join(helpySettings_lines)):
+        install_package_globally(package_name='virtualenv', import_package_name='venv', verbose=verbose, force=force)
+        install_package(package_name='python-dotenv', import_package_name='dotenv', verbose=verbose, force=force)
+        from dotenv import load_dotenv
+        load_dotenv(helpySettings.env_file_path)
+    helpySettingsDict = asdict(helpySettings)
+    for k,v in helpySettingsDict.items():
+        if (v[:2] == '${'):
+            helpySettingsDict[k] = os.environ.get(v[2:-1]) # gets rid of ${ ... }
+
+    return HelpySettings(**helpySettingsDict)
+
+# 2022-03-11 16:15
 if __name__ == "__main__":
     # print("globally")
     # install_package_globally(package_name='virtualenv', import_package_name='venv', prompt_sure=True, verbose='-v' in sys.argv, force='-f' in sys.argv)
     #
+
+    # read_helpy_settings()
     # quit()
 
 
 
     # PYPI
-    load_env_vars(env_file_path='config/conf/.env')
-    PYPI_URL: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_URL")
-    PYPI_USERNAME: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_USER")
-    PYPI_PASSWORD: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_PASS")
-    # DOCKER
-    DOCKER_IMAGE_NAME: str = "docker-hub.mywebsite.com/project/package"
+    # load_env_vars(env_file_path='config/conf/.env')
+    # PYPI_URL: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_URL")
+    # PYPI_USERNAME: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_USER")
+    # PYPI_PASSWORD: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_PASS")
+    # # DOCKER
+    # DOCKER_IMAGE_NAME: str = "docker-hub.mywebsite.com/project/package"
 
     main()
 
