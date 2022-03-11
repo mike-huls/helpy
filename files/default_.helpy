@@ -3,10 +3,10 @@
 # Values in a ${} will be read from the .env file specified at ENV_PATH
 #
 ############ .ENV ############
-ENV_FILE_PATH=/config/conf/.env
+ENV_FILE_PATH=config/conf/.env
 ############ PYPI ############
 PYPI_URL=
 PYPI_USERNAME=
-PYPI_PASSWORD=
+PYPI_PASSWORD=${PYPI_PASS}
 ########### DOCKER ###########
 DOCKER_IMAGE_NAME=
