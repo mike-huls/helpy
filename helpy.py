@@ -5,11 +5,66 @@ import sys
 import subprocess
 import importlib.util
 import urllib.request
-import pip
 VENVPY = "venv/scripts/python.exe"
 PROJECT_DIR = os.path.dirname(__file__)
 
 # region HELPY
+@dataclass
+class HelpySettings:
+    env_file_path:str = None
+    pypi_url:str = None
+    pypi_username:str = None
+    pypi_password:str = None
+    docker_image_name:str = None
+def helpy_is_initialized() -> bool:
+    return '.helpy' in os.listdir(PROJECT_DIR)
+def read_helpy_settings(verbose:bool=False, force:bool=False):
+    """ """
+
+    # 1. Is helpy initialized?
+    if (not helpy_is_initialized()):
+        if (not force):
+            if (not prompt_yes(promptmessage=f"Helpy is not initialized. Initialize helpy at {PROJECT_DIR}? (y/n)")):
+                printout(func=read_helpy_settings.__name__, msg="Exiting..", doPrint=verbose)
+                return
+        init_helpy(verbose=verbose, force=force)
+
+    # 2. REad the .helpy file
+    helpysettings_path = os.path.join(PROJECT_DIR, '.helpy')
+
+    # 3. Load .helpy into a HelpySettings object
+    helpySettings:HelpySettings = HelpySettings()
+    helpySettings_lines:[str] = []
+    with open(helpysettings_path) as file:
+        helpySettings_lines = [l.replace("\n", "") for l in file.readlines() if l[0] != "#"]
+    for line in helpySettings_lines:
+        # Reading and cleanup
+        k,v = line.split("=")
+        k = k.upper()
+        for ch in ["'", '"']:
+            if (v[0] == ch):    v = v[1:]
+            if (v[-1] == ch):   v = v[:-1]
+
+        # Add to helySettings
+        if (k == 'ENV_FILE_PATH'):          helpySettings.env_file_path = v
+        elif (k == 'PYPI_URL'):             helpySettings.pypi_url = v
+        elif (k == 'PYPI_USERNAME'):        helpySettings.pypi_username = v
+        elif (k == 'PYPI_PASSWORD'):        helpySettings.pypi_password = v
+        elif (k == 'DOCKER_IMAGE_NAME'):    helpySettings.docker_image_name = v
+
+    # 4. Load variables from env var if required
+    if ('${' in "".join(helpySettings_lines)):
+        install_package_globally(package_name='virtualenv', import_package_name='venv', verbose=verbose, force=force)
+        install_package(package_name='python-dotenv', import_package_name='dotenv', verbose=verbose, force=force)
+        from dotenv import load_dotenv
+        load_dotenv(helpySettings.env_file_path)
+    helpySettingsDict = asdict(helpySettings)
+    for k,v in helpySettingsDict.items():
+        if (v[:2] == '${'):
+            helpySettingsDict[k] = os.environ.get(v[2:-1]) # gets rid of ${ ... }
+
+    return HelpySettings(**helpySettingsDict)
+
 def update(verbose: bool = False, force: bool = False):
     """ Downloads new helpy """
 
@@ -64,37 +119,37 @@ def helpy_cur_version():
     return curfile_date
 def display_info():
     helpy_version = helpy_cur_version()
+    helpySettings = read_helpy_settings()
     printout(func="info", msg=f"""
     HELPY version {helpy_version}
         PYPI:
-        PYPI URL: \t {PYPI_URL if (PYPI_URL) else ""}
-        PYPI username: \t {PYPI_USERNAME if (PYPI_USERNAME) else ""}
-        PYPI password: \t {"*" * len(PYPI_PASSWORD) if (PYPI_PASSWORD) else ""}
+        PYPI URL: \t {helpySettings.pypi_url if (helpySettings.pypi_url) else ""}
+        PYPI username: \t {helpySettings.pypi_username if (helpySettings.pypi_username) else ""}
+        PYPI password: \t {"*" * len(helpySettings.pypi_password) if (helpySettings.pypi_password) else ""}
 
         DOCKER:
-        image name: \t {DOCKER_IMAGE_NAME if (DOCKER_IMAGE_NAME) else ""}
+        image name: \t {helpySettings.docker_image_name if (helpySettings.docker_image_name) else ""}
     """, doPrint=True)
 def help():
     helpmessage = f"""
-    Welcome to Helpy (v.{helpy_cur_version()})
-    Call [python helpy.py] with any of the following commands:
-        help                            display this message
-        info                            displays information about helpy, including constants you've set
-        version                         displays information about the current version of helpy 
-        update                          updates helpy if there is a new version
-        init project                    prepares the current folder for a python project
-        init package                    prepares the current folder for a python package
-        freeze                          pip freeze to create requirements.txt
-        serve fastapi                   tries to spin up the current project as a fastapi project 
-        docker build                    builds the image specified in the dockerfile
-        docker push                     pushes the image to dockerhub. Set username in .env or from cmd
-        package build                   uses the setup.py to build the package
-        package push                    pushes the package to the pypi specified in the .env
-        pip install [packagename]       installs a package using pypi OR the pypi specified in helpy (PYPI_URL)
-        pip install requirements.txt    installs a requirements.txt file using pypi OR the pypi specified in the helpy (PYPI_URL)
-        pip freeze                      freezes all dependencies in a requirements.txt
-    Add the -v flag for verbose output
-    Add the -y or -f flag to confirm all dialogs"""
+Welcome to Helpy (v.{helpy_cur_version()})
+Call [python helpy.py] with any of the following commands:
+    help                            display this message
+    info                            displays information about helpy, including constants you've set
+    version                         displays information about the current version of helpy 
+    update                          updates helpy if there is a new version
+    init project                    prepares the current folder for a python project
+    init package                    prepares the current folder for a python package
+    serve fastapi                   tries to spin up the current project as a fastapi project 
+    docker build                    builds the image specified in the dockerfile
+    docker push                     pushes the image to dockerhub. Set username in .env or from cmd
+    package build                   uses the setup.py to build the package
+    package push                    pushes the package to the pypi specified in the .env
+    pip install [packagename]       installs a package using pypi OR the pypi specified in helpy (PYPI_URL)
+    pip install requirements.txt    installs a requirements.txt file using pypi OR the pypi specified in the helpy (PYPI_URL)
+    pip freeze                      freezes all dependencies in a requirements.txt
+Add the -v flag for verbose output
+Add the -y or -f flag to confirm all dialogs"""
     printout(func="help", msg=helpmessage, doPrint=True)
 # endregion
 
@@ -490,6 +545,10 @@ def main():
     VERBOSE = len({'v'} & set(["".join(a.split("-")) for a in args])) > 0
     args = [a for a in args if (a[0] != '-')]
 
+    # Is Helpy already initialized?
+    if (not helpy_is_initialized()):
+        init_helpy(verbose=VERBOSE, force=DO_FORCE)
+
     # Check for updates
     if (cmd1 != 'update'):
         # Checks for updates
@@ -609,82 +668,10 @@ def main():
         help()
 
 
-@dataclass
-class HelpySettings:
-    env_file_path:str = None
-    pypi_url:str = None
-    pypi_username:str = None
-    pypi_password:str = None
-    docker_image_name:str = None
 
-def helpy_is_initialized():
-    return '.helpy' in os.listdir(PROJECT_DIR)
-def read_helpy_settings(verbose:bool=False, force:bool=False):
-    """ """
 
-    # 1. Is helpy initialized?
-    if (not helpy_is_initialized()):
-        if (not force):
-            if (not prompt_yes(promptmessage=f"Helpy is not initialized. Initialize helpy at {PROJECT_DIR}? (y/n)")):
-                printout(func=read_helpy_settings.__name__, msg="Exiting..", doPrint=verbose)
-                return
-        init_helpy(verbose=verbose, force=force)
-
-    # 2. REad the .helpy file
-    helpysettings_path = os.path.join(PROJECT_DIR, '.helpy')
-
-    # 3. Load .helpy into a HelpySettings object
-    helpySettings:HelpySettings = HelpySettings()
-    helpySettings_lines:[str] = []
-    with open(helpysettings_path) as file:
-        helpySettings_lines = [l.replace("\n", "") for l in file.readlines() if l[0] != "#"]
-    for line in helpySettings_lines:
-        # Reading and cleanup
-        k,v = line.split("=")
-        k = k.upper()
-        for ch in ["'", '"']:
-            if (v[0] == ch):    v = v[1:]
-            if (v[-1] == ch):   v = v[:-1]
-
-        # Add to helySettings
-        if (k == 'ENV_FILE_PATH'):          helpySettings.env_file_path = v
-        elif (k == 'PYPI_URL'):             helpySettings.pypi_url = v
-        elif (k == 'PYPI_USERNAME'):        helpySettings.pypi_username = v
-        elif (k == 'PYPI_PASSWORD'):        helpySettings.pypi_password = v
-        elif (k == 'DOCKER_IMAGE_NAME'):    helpySettings.docker_image_name = v
-
-    # 4. Load variables from env var if required
-    if ('${' in "".join(helpySettings_lines)):
-        install_package_globally(package_name='virtualenv', import_package_name='venv', verbose=verbose, force=force)
-        install_package(package_name='python-dotenv', import_package_name='dotenv', verbose=verbose, force=force)
-        from dotenv import load_dotenv
-        load_dotenv(helpySettings.env_file_path)
-    helpySettingsDict = asdict(helpySettings)
-    for k,v in helpySettingsDict.items():
-        if (v[:2] == '${'):
-            helpySettingsDict[k] = os.environ.get(v[2:-1]) # gets rid of ${ ... }
-
-    return HelpySettings(**helpySettingsDict)
-
-# 2022-03-11 16:15
+# 2022-03-11 16:33
 if __name__ == "__main__":
-    # print("globally")
-    # install_package_globally(package_name='virtualenv', import_package_name='venv', prompt_sure=True, verbose='-v' in sys.argv, force='-f' in sys.argv)
-    #
-
-    # read_helpy_settings()
-    # quit()
-
-
-
-    # PYPI
-    # load_env_vars(env_file_path='config/conf/.env')
-    # PYPI_URL: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_URL")
-    # PYPI_USERNAME: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_USER")
-    # PYPI_PASSWORD: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_PASS")
-    # # DOCKER
-    # DOCKER_IMAGE_NAME: str = "docker-hub.mywebsite.com/project/package"
-
     main()
 
 
