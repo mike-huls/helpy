@@ -2,10 +2,11 @@ import os
 import shutil
 import sys
 import subprocess
+import importlib.util
 import urllib.request
 import pip
 VENVPY = "venv/scripts/python.exe"
-
+PROJECT_DIR = os.path.dirname(__file__)
 
 # region HELPY
 def update(verbose: bool = False, force: bool = False):
@@ -103,20 +104,6 @@ def pop_arg_or_exit(arglist: [str], errormessage: str):
         printout(func="helpy", msg=f"{errormessage}", doPrint=True)
         sys.exit(0)
     return arglist.pop(0).lower()
-def prompt_sure(prompt_text: str) -> None:
-    def outer_wrapper(func):
-        def wrapper(*args, **kwargs):
-            if (input(prompt_text).lower() != 'y'):
-                return
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return outer_wrapper
-def prompt_yesno(prompt_text: str) -> None:
-    if (input(prompt_text).lower() != 'y'):
-        print("exiting..")
-        exit(0)
 def getrequest(url: str) -> str:
     httprequest = urllib.request.Request(url, data={}, headers={}, method="GET")
     with urllib.request.urlopen(httprequest) as httpresponse:
@@ -173,11 +160,12 @@ def replace_in_file(filepath: str, replace_this_text: str, replacment_text: str)
 # endregion
 
 # region ENV
-def load_env_vars(env_file_path: str = None) -> None:
-    try:
-        from dotenv import load_dotenv
-    except ImportError as e:
-        subprocess.call(f"{VENVPY} -m pip install python-dotenv --upgrade")
+def load_env_vars(env_file_path: str = None, verbose:bool=False) -> None:
+    install_package(package_name='python-dotenv', prompt_sure=True, verbose=verbose)
+    # try:
+    #     from dotenv import load_dotenv
+    # except ImportError as e:
+    #     subprocess.call(f"{VENVPY} -m pip install python-dotenv --upgrade")
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=env_file_path)
 def venv_exists() -> bool:
@@ -189,12 +177,13 @@ def create_virtualenv(projectfolder: str, verbose: bool = False):
         printout(func=create_virtualenv.__name__, msg=f"Virtual environment already exists", doPrint=verbose)
         return
 
-    try:
-        import venv
-    except ImportError as e:
-        printout(func=create_virtualenv.__name__, msg=f"Create venv: venv not installed: installing..", doPrint=verbose)
-        subprocess.call(f"{VENVPY} -m pip install venv --upgrade")
-        printout(func=create_virtualenv.__name__, msg=f"Create venv: venv successfully installed.", doPrint=verbose)
+    # try:
+    #     import venv
+    # except ImportError as e:
+    #     printout(func=create_virtualenv.__name__, msg=f"Create venv: venv not installed: installing..", doPrint=verbose)
+    #     subprocess.call(f"{VENVPY} -m pip install venv --upgrade")
+    #     printout(func=create_virtualenv.__name__, msg=f"Create venv: venv successfully installed.", doPrint=verbose)
+    install_package_globally(package_name='virtualenv', import_package_name='venv', prompt_sure=True, verbose=verbose)
     printout(func=create_virtualenv.__name__, msg=f"Installing virtualenv", doPrint=verbose)
     subprocess.call(f'python.exe -m venv {projectfolder}/venv')
     printout(func=create_virtualenv.__name__, msg=f"Successfully created virtualenv", doPrint=verbose)
@@ -273,50 +262,36 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
 
 # endregion
 
-# region PIP
-def pip_freeze(verbose: bool = False):
-    printout(func=pip_freeze.__name__, msg=f"Pip freezing requirements..", doPrint=verbose)
-    try:
-        python_location = os.path.join(os.getcwd(), VENVPY)
-        with open('requirements.txt', 'w') as file_:
-            subprocess.call([python_location, '-m', 'pip', 'freeze'], stdout=file_)
-        printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
-    except Exception as e:
-        printout(func=pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
-
-
-# endregion
-
-# region FASTAPI
+# region SERVE
 def serve_fastapi(verbose:bool=False):
     """ Makes it so that you can serve fastapi"""
 
     # 1. Ensure Fastapi is installed
-    try:
-        import fastapi
-        printout(func=serve_fastapi.__name__, msg="fastpi not installed; installing..", doPrint=verbose)
-    except ImportError as e:
-        subprocess.call("venv/scripts/python.exe -m pip install fastapi --upgrade")
-        printout(func=serve_fastapi.__name__, msg="Installed fastapi", doPrint=verbose)
+    ensure_package_installed(package_name='fastapi', show_prompt=True)
+    # try:
+    #     import fastapi
+    #     printout(func=serve_fastapi.__name__, msg="fastpi not installed; installing..", doPrint=verbose)
+    # except ImportError as e:
+    #     subprocess.call("venv/scripts/python.exe -m pip install fastapi --upgrade")
+    #     printout(func=serve_fastapi.__name__, msg="Installed fastapi", doPrint=verbose)
 
     # 2. Ensure uvicorn is installed
-    try:
-        import uvicorn
-        printout(func=serve_fastapi.__name__, msg="uvicorn not installed; installing..", doPrint=verbose)
-    except ImportError as e:
-        subprocess.call("venv/scripts/python.exe -m pip install uvicorn --upgrade")
-        printout(func=serve_fastapi.__name__, msg="Installed uvicorn", doPrint=verbose)
+    ensure_package_installed(package_name='uvicorn', show_prompt=True)
+    # try:
+    #     import uvicorn
+    #     printout(func=serve_fastapi.__name__, msg="uvicorn not installed; installing..", doPrint=verbose)
+    # except ImportError as e:
+    #     subprocess.call("venv/scripts/python.exe -m pip install uvicorn --upgrade")
+    #     printout(func=serve_fastapi.__name__, msg="Installed uvicorn", doPrint=verbose)
 
     # 3. Serve fastapi on uvicorn
     try:
         subprocess.call('venv/scripts/python.exe -m uvicorn main:app --env-file config/conf/.env --reload')
     except Exception as e:
         printout(func=serve_fastapi.__name__, msg=f"Serving project with FastAPI failed: \n\t'{e}'", doPrint=True)
-
-
 # endregion
 
-# region docker
+# region DOCKER
 def docker_system_prune():
     try:
         subprocess.call(f"docker system prune -f")
@@ -363,7 +338,7 @@ def docker_push(verbose: bool = False, force: bool = False):
 
 # endregion
 
-# region PYPI
+# region PYPI - PACKAGES
 def package_build(verbose: bool = False):
     """ packages code in current directory to the dist folder """
 
@@ -377,10 +352,12 @@ def package_build(verbose: bool = False):
         printout(func=package_build.__name__, msg=f"Dist folder does not exist yet. Skipping..", doPrint=verbose)
 
     pip_freeze(verbose=verbose)
-    try:
-        import twine
-    except ImportError as e:
-        subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
+    # try:
+    #     import twine
+    # except ImportError as e:
+    #     subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
+    ensure_package_installed(package_name='twine', show_prompt=True)
+
     subprocess.call(f"{VENVPY} setup.py sdist")
 def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose: bool = False, force: bool = False):
     """ Pushes the package to pypi server """
@@ -390,12 +367,13 @@ def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose:
             return
 
     # 2. Ensure twine is installed
-    try:
-        import twine
-    except ImportError as e:
-        printout(func=package_push.__name__, msg="twine not installed; installing..", doPrint=verbose)
-        subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
-        printout(func=package_push.__name__, msg="Successfully installed twine", doPrint=verbose)
+    ensure_package_installed(package_name='twine', show_prompt=True)
+    # try:
+    #     import twine
+    # except ImportError as e:
+    #     printout(func=package_push.__name__, msg="twine not installed; installing..", doPrint=verbose)
+    #     subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
+    #     printout(func=package_push.__name__, msg="Successfully installed twine", doPrint=verbose)
 
     # 3. Call package push
     printout(func=package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=verbose)
@@ -404,22 +382,95 @@ def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose:
         printout(func=package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=verbose)
     except Exception as e:
         printout(func=package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
-def install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False, force:bool=False):
+# endregion
+
+# region PIP
+def pip_freeze(verbose: bool = False):
+    printout(func=pip_freeze.__name__, msg=f"Pip freezing requirements..", doPrint=verbose)
+    try:
+        python_location = os.path.join(os.getcwd(), VENVPY)
+        with open('requirements.txt', 'w') as file_:
+            subprocess.call([python_location, '-m', 'pip', 'freeze'], stdout=file_)
+        printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
+    except Exception as e:
+        printout(func=pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
+def pip_install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False):
     """ Installs a package using your custom pypi url that you specified in the settings of helpy """
 
-    printout(func=f"{install_package.__name__}", msg=f"Installing package {package_name}", doPrint=verbose)
+    printout(func=f"{pip_install_package.__name__}", msg=f"Installing package {package_name}", doPrint=verbose)
     pypi_url_split = pypi_url.split("://")[1]
     cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {package_name} --upgrade"
     subprocess.call(cmd)
-    printout(func=f"{install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
-def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False, force:bool=False):
+    printout(func=f"{pip_install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
+def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False):
     """ Installs all packages in the requirements.txt file """
 
-    printout(func=f"{install_package.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
+    printout(func=f"{pip_install_package.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
     pypi_url_split = pypi_url.split("://")[1]
     cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} -r requirements.txt --upgrade"
     subprocess.call(cmd)
-    printout(func=f"{install_package.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
+    printout(func=f"{pip_install_package.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
+
+
+def package_is_installed(package_name:str) -> bool:
+    """ Returns t/f depending on whether a package is installed in this project
+        :arg package_name   str     name of the package you're checking
+    """
+    return importlib.util.find_spec(package_name) != None
+def pip_list() -> None:
+    cmd:str = f"pip list"
+    p = subprocess.Popen(['pip', 'list'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, err = p.communicate(b"input data that is passed to subprocess' stdin")
+    rc = p.returncode
+    print(output, err, rc)
+def install_package_globally(package_name:str, import_package_name:str=None, prompt_sure:bool=False, verbose:bool=False, force:bool=False) -> None:
+    """ Installs a package globally, NOT in the project venv """
+    # Check if already installed
+
+    # Check if we need to ask for confirmation
+    if (prompt_sure):
+        if (input(f"Are you sure you want to install package '{package_name}'? (y/n)").lower().strip() != 'y'):
+            printout(func=install_package_globally.__name__, msg=f"Exiting..", doPrint=verbose)
+            return
+
+    # Check if the package is already installed
+    if (not force):
+        already_installed = package_is_installed(package_name=package_name)
+        if (import_package_name != None):
+            # Check alternative name (virtualenv has an importname of venv e.g.)
+            if (package_is_installed(package_name=import_package_name)):
+                already_installed = True
+        if (already_installed):
+            printout(func=install_package_globally.__name__, msg=f"Package {package_name} already installed. Skipping..", doPrint=verbose)
+            return
+
+    # Install
+    printout(func=install_package_globally.__name__, msg=f"Installing {package_name}..", doPrint=verbose)
+    cmd:str = f"pip install {package_name} --upgrade"
+    res = subprocess.call(cmd)
+    printout(func=install_package_globally.__name__, msg=f"Installed {package_name}", doPrint=verbose)
+def install_package(package_name:str, import_package_name:str=None, python_location:str="venv/Scripts/python.exe", prompt_sure:bool=False, verbose:bool=False, force:bool=False) -> None:
+    """ Calls pip module using the python location to install the package name"""
+    printout(func=install_package.__name__, msg=f"Installing {package_name}..", doPrint=verbose)
+
+    if (prompt_sure):
+        if (input(f"Install package {package_name}? (y/n)").lower().strip() != 'y'):
+            printout(func=install_package.__name__, msg=f"Exiting..", doPrint=verbose)
+
+    # Check if the package is already installed
+    if (not force):
+        already_installed = package_is_installed(package_name=package_name)
+        if (import_package_name != None):
+            # Check alternative name (virtualenv has an importname of venv e.g.)
+            if (package_is_installed(package_name=import_package_name)):
+                already_installed = True
+        if (already_installed):
+            printout(func=install_package_globally.__name__, msg=f"Package {package_name} already installed. Skipping..", doPrint=verbose)
+            return
+
+    cmd:str = f"{python_location} -m pip install {package_name} --upgrade"
+    res = subprocess.call(cmd)
+    printout(func=install_package.__name__, msg=f"Installed {package_name}", doPrint=verbose)
 # endregion
 
 
@@ -537,7 +588,7 @@ def main():
                 if (package_name == None):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     package_name = input("Install which package?")
-                install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+                pip_install_package(pypi_url=PYPI_URL, pypi_username=PYPI_USERNAME, pypi_pasword=PYPI_PASSWORD, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
 
 
 
@@ -552,8 +603,15 @@ def main():
 
 # 2022-03-09 15:45
 if __name__ == "__main__":
+    # print("globally")
+    # install_package_globally(package_name='virtualenv', import_package_name='venv', prompt_sure=True, verbose='-v' in sys.argv, force='-f' in sys.argv)
+    #
+    # quit()
+
+
+
     # PYPI
-    # load_env_vars(env_file_path='config/conf/.env')
+    load_env_vars(env_file_path='config/conf/.env')
     PYPI_URL: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_URL")
     PYPI_USERNAME: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_USER")
     PYPI_PASSWORD: str = 'tttttttttttttttt' #None # os.environ.get("PYPI_PASS")
