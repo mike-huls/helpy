@@ -319,24 +319,8 @@ def serve_fastapi(verbose:bool=False):
     """ Makes it so that you can serve fastapi"""
 
     # 1. Ensure Fastapi is installed
-    ensure_package_installed(package_name='fastapi', show_prompt=True)
-    # try:
-    #     import fastapi
-    #     printout(func=serve_fastapi.__name__, msg="fastpi not installed; installing..", doPrint=verbose)
-    # except ImportError as e:
-    #     subprocess.call("venv/scripts/python.exe -m pip install fastapi --upgrade")
-    #     printout(func=serve_fastapi.__name__, msg="Installed fastapi", doPrint=verbose)
-
-    # 2. Ensure uvicorn is installed
-    ensure_package_installed(package_name='uvicorn', show_prompt=True)
-    # try:
-    #     import uvicorn
-    #     printout(func=serve_fastapi.__name__, msg="uvicorn not installed; installing..", doPrint=verbose)
-    # except ImportError as e:
-    #     subprocess.call("venv/scripts/python.exe -m pip install uvicorn --upgrade")
-    #     printout(func=serve_fastapi.__name__, msg="Installed uvicorn", doPrint=verbose)
-
-    # 3. Serve fastapi on uvicorn
+    install_package(package_name='fastapi', prompt_sure=True, python_location=VENVPY, verbose=verbose)
+    install_package(package_name='uvicorn', prompt_sure=True, python_location=VENVPY, verbose=verbose)
     try:
         subprocess.call('venv/scripts/python.exe -m uvicorn main:app --env-file config/conf/.env --reload')
     except Exception as e:
@@ -408,7 +392,8 @@ def package_build(verbose: bool = False):
     #     import twine
     # except ImportError as e:
     #     subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
-    ensure_package_installed(package_name='twine', show_prompt=True)
+    install_package(package_name='twine', prompt_sure=True, python_location=VENVPY, verbose=verbose)
+
 
     subprocess.call(f"{VENVPY} setup.py sdist")
 def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose: bool = False, force: bool = False):
@@ -419,15 +404,7 @@ def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose:
             return
 
     # 2. Ensure twine is installed
-    ensure_package_installed(package_name='twine', show_prompt=True)
-    # try:
-    #     import twine
-    # except ImportError as e:
-    #     printout(func=package_push.__name__, msg="twine not installed; installing..", doPrint=verbose)
-    #     subprocess.call("venv/scripts/python.exe -m pip install twine --upgrade")
-    #     printout(func=package_push.__name__, msg="Successfully installed twine", doPrint=verbose)
-
-    # 3. Call package push
+    install_package(package_name='twine', prompt_sure=True, python_location=VENVPY, verbose=verbose, force=force)
     printout(func=package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=verbose)
     try:
         subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"')
