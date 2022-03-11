@@ -7,6 +7,6 @@ ENV_FILE_PATH=config/conf/.env
 ############ PYPI ############
 PYPI_URL=
 PYPI_USERNAME=
-PYPI_PASSWORD=${PYPI_PASS}
+PYPI_PASSWORD=
 ########### DOCKER ###########
 DOCKER_IMAGE_NAME=
