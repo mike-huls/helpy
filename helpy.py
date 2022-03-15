@@ -38,7 +38,6 @@ def read_helpy_settings(verbose:bool=False, force:bool=False):
     with open(helpysettings_path) as file:
         helpySettings_lines = [l.replace("\n", "") for l in file.readlines() if l[0] != "#"]
     for line in helpySettings_lines:
-        print(line)
         # Reading and cleanup
         k,v = line.split("=")
         if (v == '' or v == None):
@@ -672,7 +671,7 @@ def main():
 
 
 
-# 2022-03-15 15:45
+# 2022-03-15 15:46
 if __name__ == "__main__":
     main()
 
