@@ -262,22 +262,6 @@ def init_helpy(verbose:bool=False, force:bool=False):
     printout(func=init_helpy.__name__, msg=f"Initializing helpy at {PROJFOLDER}..", doPrint=verbose)
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
-    # Create venv
-    printout(func=init_helpy.__name__, msg=f"Initializing venv..", doPrint=verbose)
-    create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
-    printout(func=init_helpy.__name__, msg=f"Initialized venv", doPrint=verbose)
-
-    # config/conf/.env
-    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
-    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
-    download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
-    create_empty_file(filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
-
-    # Create default files (with content)
-    download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
-    download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
-
     # Create .helpy settings file
     download_file(url=f"{FILES_URL}/default_.helpy", filepath=os.path.join(PROJFOLDER, '.helpy'), verbose=verbose, overwrite=force)
     printout(func=init_helpy.__name__, msg=f"Initialized helpy. Don't forget to activate the new venv", doPrint=verbose)
@@ -289,9 +273,26 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     printout(func=init_project.__name__, msg=f"Initializing new project '{project_name}' at {PROJFOLDER}..", doPrint=verbose)
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
+    # Create venv
+    printout(func=init_helpy.__name__, msg=f"Initializing venv..", doPrint=verbose)
+    create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
+    printout(func=init_helpy.__name__, msg=f"Initialized venv", doPrint=verbose)
+
+    # config/conf/.env
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+
+    # Create default folders
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+
     # Create default files (with content)
+    download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(PROJFOLDER, 'main.py'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(PROJFOLDER, 'Dockerfile'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(PROJFOLDER, '.dockerignore'), verbose=verbose, overwrite=force)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
 def init_package(package_name: str, verbose: bool = False, force: bool = False):
@@ -301,15 +302,31 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
 
-    printout(func=init_project.__name__, msg=f"Creating default folders and files..", doPrint=verbose)
-    # Create module folder with __init__.py
-    create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
-    create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
+    # Create venv
+    printout(func=init_helpy.__name__, msg=f"Initializing venv..", doPrint=verbose)
+    create_virtualenv(projectfolder=PROJFOLDER, verbose=verbose)
+    printout(func=init_helpy.__name__, msg=f"Initialized venv", doPrint=verbose)
 
+    # config/conf/.env
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+
+    # Create default folders
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
+    create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+
+    # Create default files (with content)
+    download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=verbose, overwrite=force)
     download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=verbose, overwrite=force)
     replace_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
 
+
+    # Create module folder with __init__.py
+    create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=verbose)
 
     printout(func=init_project.__name__, msg=f"Project initialized", doPrint=True)
 # endregion
@@ -518,9 +535,10 @@ def main():
     cmd1 = pop_arg_or_exit(arglist=args, errormessage="Helpy expects at least one argument. Check out [helpy.py help] for more information")
 
     # Settings
-    DO_FORCE = len({'f', 'y'} & set(["".join(a.split("-")) for a in args])) > 0
-    VERBOSE = len({'v'} & set(["".join(a.split("-")) for a in args])) > 0
-    args = [a for a in args if (a[0] != '-')]
+    DO_FORCE = '-f' in args
+    args.remove('-f') if ('-f' in args) else None
+    VERBOSE = '-v' in args
+    args.remove('-v') if ('-v' in args) else None
 
     # Is Helpy already initialized?
     if (not helpy_is_initialized()):
@@ -647,7 +665,7 @@ def main():
 
 
 
-# 2022-03-11 16:33
+# 2022-03-15 09:56
 if __name__ == "__main__":
     main()
 
