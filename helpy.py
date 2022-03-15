@@ -34,12 +34,15 @@ def read_helpy_settings(verbose:bool=False, force:bool=False):
 
     # 3. Load .helpy into a HelpySettings object
     helpySettings:HelpySettings = HelpySettings()
-    helpySettings_lines:[str] = []
+    helpySettings_lines:[str]
     with open(helpysettings_path) as file:
         helpySettings_lines = [l.replace("\n", "") for l in file.readlines() if l[0] != "#"]
     for line in helpySettings_lines:
+        print(line)
         # Reading and cleanup
         k,v = line.split("=")
+        if (v == '' or v == None):
+            continue
         k = k.upper()
         for ch in ["'", '"']:
             if (v[0] == ch):    v = v[1:]
@@ -60,6 +63,8 @@ def read_helpy_settings(verbose:bool=False, force:bool=False):
         load_dotenv(helpySettings.env_file_path)
     helpySettingsDict = asdict(helpySettings)
     for k,v in helpySettingsDict.items():
+        if (v == '' or v == None):
+            continue
         if (v[:2] == '${'):
             helpySettingsDict[k] = os.environ.get(v[2:-1]) # gets rid of ${ ... }
 
@@ -667,7 +672,7 @@ def main():
 
 
 
-# 2022-03-15 14:19
+# 2022-03-15 15:45
 if __name__ == "__main__":
     main()
 
