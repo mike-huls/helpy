@@ -16,6 +16,10 @@ class HelpySettings:
     pypi_username:str = None
     pypi_password:str = None
     docker_image_name:str = None
+
+    def validate(self):
+        if (self.pypi_url != None and '://' not in self.pypi_url and 'http' not in self.pypi_url):
+            raise ValueError("PyPiUrl invalide: please provide schema (http:// https://)")
 def helpy_is_initialized() -> bool:
     return '.helpy' in os.listdir(PROJECT_DIR)
 def read_helpy_settings(verbose:bool=False, force:bool=False):
@@ -546,8 +550,9 @@ def main():
     VERBOSE = '-v' in args
     args.remove('-v') if ('-v' in args) else None
 
-
+    # Get and validate settings
     helpySettings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
+
 
     # Is Helpy already initialized?
     if (not helpy_is_initialized()):
@@ -558,7 +563,7 @@ def main():
         # Checks for updates
         update(force=False, verbose=VERBOSE)
 
-    # Regular functions
+    # HELPY functions
     if (cmd1 == 'update'):
         #
         update(force=True, verbose=VERBOSE)
@@ -571,9 +576,13 @@ def main():
     elif (cmd1 == 'version'):
         #
         print(f"Helpy version {helpy_cur_version()}")
+
+    # Regular functions
     elif (cmd1 == 'init'):
         # Get init_type
         init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy.py init] requires another argument. Check out [helpy.py help] for more information")
+
+        helpySettings.validate()
 
         # Functions
         if (init_type == 'helpy'):
@@ -605,6 +614,7 @@ def main():
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py serve]: '{serve_op}'. Check out [helpy.py serve list] for more information")
     elif (cmd1 == 'docker'):
+        helpySettings.validate()
         docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py docker] requires another argument. Check out [helpy.py help] for more information")
 
         if (docker_op == 'build'):
@@ -614,6 +624,7 @@ def main():
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py docker]: '{docker_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'package'):
+        helpySettings.validate()
         package_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
 
         if (package_op == 'build'):
@@ -636,6 +647,8 @@ def main():
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py package]: '{package_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'pip'):
+        helpySettings.validate()
+
         pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
         if (pip_op == 'install'):
 
@@ -663,14 +676,14 @@ def main():
             pip_freeze(verbose=VERBOSE)
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py pip]: '{pip_op}'. Check out [helpy.py help] for more information")
+
     else:
         print(f"unknown command: '{cmd1}'")
         help()
 
 
 
-
-# 2022-03-15 15:53
+# 2022-03-15 16:16
 if __name__ == "__main__":
     main()
 
