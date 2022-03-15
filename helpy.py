@@ -282,6 +282,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_definitions.py", filepath=os.path.join(PROJFOLDER, 'config', 'definitions.py'), verbose=verbose, overwrite=force)
 
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
@@ -311,6 +312,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     create_folder(folderpath=os.path.join(PROJFOLDER, 'config'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'config', 'conf'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(PROJFOLDER, 'config', 'conf', '.env'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_definitions.py", filepath=os.path.join(PROJFOLDER, 'config', 'definitions.py'), verbose=verbose, overwrite=force)
 
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
@@ -665,7 +667,7 @@ def main():
 
 
 
-# 2022-03-15 09:56
+# 2022-03-15 14:19
 if __name__ == "__main__":
     main()
 
