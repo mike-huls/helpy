@@ -362,11 +362,11 @@ def docker_login(docker_username: str, docker_password: str, verbose: bool = Fal
     """ Use the docker image name to log in """
 
 
-def docker_build(verbose: bool = False):
-    if (len(DOCKER_IMAGE_NAME) < 3):
-        printout(func=docker_build.__name__, msg="Please provide a docker image name in helpy.py", doPrint=True)
+def docker_build(docker_image_name:str, verbose: bool = False):
+    if (len(docker_image_name) < 3):
+        printout(func=docker_build.__name__, msg="Please provide a docker image name in .helpy", doPrint=True)
         return
-    printout(func=docker_build.__name__, msg=f"Building docker image '{DOCKER_IMAGE_NAME}'..", doPrint=verbose)
+    printout(func=docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=verbose)
     pip_freeze(verbose=verbose)
     try:
         subprocess.call(f'docker build . -t "{DOCKER_IMAGE_NAME}" --secret id=pypicreds,src=config\conf\.env')
@@ -376,21 +376,21 @@ def docker_build(verbose: bool = False):
         printout(func=docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
 
 
-def docker_push(verbose: bool = False, force: bool = False):
+def docker_push(docker_image_name:str, verbose: bool = False, force: bool = False):
     """ Pushes the docker image to the docker hub """
 
-    if (len(DOCKER_IMAGE_NAME) <= 3):
+    if (len(docker_image_name) <= 3):
         printout(func=docker_push.__name__, msg=f"Invalid DOCKER_IMAGE_NAME: '{DOCKER_IMAGE_NAME}'. Please provide a docker image name in helpy.py", doPrint=True)
         return
 
     if (not force):
-        if (input(f"Are you sure you want to push '{DOCKER_IMAGE_NAME}' to dockerhub? (y/n)").lower() != "y"):
+        if (input(f"Are you sure you want to push '{docker_image_name}' to dockerhub? (y/n)").lower() != "y"):
             return
 
-    printout(func=docker_push.__name__, msg=f"Pushing image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
+    printout(func=docker_push.__name__, msg=f"Pushing image '{docker_image_name}' to docker hub", doPrint=verbose)
     try:
-        subprocess.call(f'docker push "{DOCKER_IMAGE_NAME}"')
-        printout(func=docker_push.__name__, msg=f"Successfully pushed image '{DOCKER_IMAGE_NAME}' to docker hub", doPrint=verbose)
+        subprocess.call(f'docker push "{docker_image_name}"')
+        printout(func=docker_push.__name__, msg=f"Successfully pushed image '{docker_image_name}' to docker hub", doPrint=verbose)
     except Exception as e:
         printout(func=docker_push.__name__, msg=f"Failed to push docker image: \n\t'{e}'", doPrint=True)
 
@@ -546,6 +546,9 @@ def main():
     VERBOSE = '-v' in args
     args.remove('-v') if ('-v' in args) else None
 
+
+    helpySettings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
+
     # Is Helpy already initialized?
     if (not helpy_is_initialized()):
         init_helpy(verbose=VERBOSE, force=DO_FORCE)
@@ -605,9 +608,9 @@ def main():
         docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py docker] requires another argument. Check out [helpy.py help] for more information")
 
         if (docker_op == 'build'):
-            docker_build(verbose=VERBOSE)
+            docker_build(docker_image_name=helpySettings.docker_image_name, verbose=VERBOSE)
         elif (docker_op == 'push'):
-            docker_push(force=DO_FORCE, verbose=VERBOSE)
+            docker_push(docker_image_name=helpySettings.docker_image_name, force=DO_FORCE, verbose=VERBOSE)
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py docker]: '{docker_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'package'):
@@ -617,49 +620,45 @@ def main():
             #
             package_build(verbose=VERBOSE)
         elif (package_op == 'push'):
-            settings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
+            helpySettings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
 
             # 1. Check if all variables are set
-            if (len(str(settings.pypi_url)) <= 5):
-                printout(func="push", msg="Please set PyPi Url in helpy.py")
+            if (len(str(helpySettings.pypi_url)) <= 5):
+                printout(func="push", msg="Please set PyPi Url in .helpy")
                 sys.exit(0)
-            if (len(str(settings.pypi_username)) <= 5):
-                printout(func="push", msg="Please set PyPi Username in helpy.py")
+            if (len(str(helpySettings.pypi_username)) <= 5):
+                printout(func="push", msg="Please set PyPi Username in .helpy")
                 sys.exit(0)
-            if (len(str(settings.pypi_password)) <= 5):
-                printout(func="push", msg="Please set PyPi Password in helpy.py")
+            if (len(str(helpySettings.pypi_password)) <= 5):
+                printout(func="push", msg="Please set PyPi Password in .helpy")
                 sys.exit(0)
-            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_password=settings.pypi_password)
+            package_push(verbose=VERBOSE, force=DO_FORCE, pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_password=helpySettings.pypi_password)
         else:
             printout(func="helpy", msg=f"Unknown option for [helpy.py package]: '{package_op}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'pip'):
         pip_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py package] requires another argument. Check out [helpy.py help] for more information")
         if (pip_op == 'install'):
-            settings:HelpySettings = read_helpy_settings(verbose=VERBOSE, force=DO_FORCE)
 
             # 1. Check if all required variables are set
-            if (len(str(settings.pypi_url)) <= 5):
-                printout(func="push", msg="Please set PyPi Url in helpy.py")
+            if (len(str(helpySettings.pypi_url)) <= 5):
+                printout(func="push", msg="Please set PyPi Url in .helpy")
                 sys.exit(0)
-            if (len(str(settings.pypi_username)) <= 5):
-                printout(func="push", msg="Please set PyPi Username in helpy.py")
+            if (len(str(helpySettings.pypi_username)) <= 5):
+                printout(func="push", msg="Please set PyPi Username in .helpy")
                 sys.exit(0)
-            if (len(str(settings.pypi_password)) <= 5):
-                printout(func="push", msg="Please set PyPi Password in helpy.py")
+            if (len(str(helpySettings.pypi_password)) <= 5):
+                printout(func="push", msg="Please set PyPi Password in .helpy")
                 sys.exit(0)
 
             if ('requirements.txt' in " ".join(args)):
-                install_requirementstxt(pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_pasword=settings.pypi_password, verbose=VERBOSE, force=DO_FORCE)
+                install_requirementstxt(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, verbose=VERBOSE, force=DO_FORCE)
             else:
                 # 2. Package name should be set or taken from input
                 package_name = args[0] if (len(args) > 0) else None
                 if (package_name == None):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     package_name = input("Install which package?")
-                pip_install_package(pypi_url=settings.pypi_url, pypi_username=settings.pypi_username, pypi_pasword=settings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
-
-
-
+                pip_install_package(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         elif (pip_op == 'freeze'):
             pip_freeze(verbose=VERBOSE)
         else:
@@ -671,7 +670,7 @@ def main():
 
 
 
-# 2022-03-15 15:46
+# 2022-03-15 15:53
 if __name__ == "__main__":
     main()
 
