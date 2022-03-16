@@ -674,18 +674,37 @@ def main():
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     package_name = input("Install which package?")
                 pip_install_package(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+        elif (pip_op == 'upgrade'):
+            # 1. Check if all required variables are set
+            if (len(str(helpySettings.pypi_url)) <= 5):
+                printout(func="push", msg="Please set PyPi Url in .helpy")
+                sys.exit(0)
+            if (len(str(helpySettings.pypi_username)) <= 5):
+                printout(func="push", msg="Please set PyPi Username in .helpy")
+                sys.exit(0)
+            if (len(str(helpySettings.pypi_password)) <= 5):
+                printout(func="push", msg="Please set PyPi Password in .helpy")
+                sys.exit(0)
+
+            # 2. Package name should be set or taken from input
+            package_name = args[0] if (len(args) > 0) else None
+            if (package_name == None):
+                printout(func="tip", msg="you can also provide the package like python helpy.py pip upgrade [packagename]", doPrint=True)
+                package_name = input("Install which package?")
+            pip_install_package(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
         elif (pip_op == 'freeze'):
+            #
             pip_freeze(verbose=VERBOSE)
         else:
+            #
             printout(func="helpy", msg=f"Unknown option for [helpy.py pip]: '{pip_op}'. Check out [helpy.py help] for more information")
-
     else:
         print(f"unknown command: '{cmd1}'")
         help()
 
 
 
-# 2022-03-16 15:51
+# 2022-03-16 16:51
 if __name__ == "__main__":
     main()
 
