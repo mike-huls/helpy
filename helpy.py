@@ -7,6 +7,7 @@ import importlib.util
 import urllib.request
 VENVPY = "venv/scripts/python.exe"
 PROJECT_DIR = os.path.dirname(__file__)
+PROJECT_DIR = os.getcwd()
 
 # region HELPY
 @dataclass
@@ -293,7 +294,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
-    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
@@ -324,7 +325,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
-    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions'), verbose=verbose, overwrite=force)
+    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
