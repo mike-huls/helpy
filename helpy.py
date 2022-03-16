@@ -237,7 +237,7 @@ def load_env_vars(env_file_path: str = None, verbose:bool=False, force:bool=Fals
                 return
         create_virtualenv(projectfolder=this_dir, verbose=verbose)
 
-    install_package(package_name='python-dotenv', import_package_name='dotenv', prompt_sure=True, python_location=VENVPY, verbose=verbose)
+    install_package(package_name='python-dotenv', import_package_name='dotenv', prompt_sure=not force, python_location=VENVPY, verbose=verbose)
     from dotenv import load_dotenv
     load_dotenv(dotenv_path=env_file_path)
 def venv_exists() -> bool:
@@ -259,8 +259,6 @@ def create_virtualenv(projectfolder: str, verbose: bool = False):
     printout(func=create_virtualenv.__name__, msg=f"Installing virtualenv", doPrint=verbose)
     subprocess.call(f'python.exe -m venv {projectfolder}/venv')
     printout(func=create_virtualenv.__name__, msg=f"Successfully created virtualenv", doPrint=verbose)
-
-
 # endregion
 
 # region INIT
@@ -295,6 +293,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
@@ -325,6 +324,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
     download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=verbose, overwrite=force)
@@ -431,7 +431,7 @@ def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose:
             return
 
     # 2. Ensure twine is installed
-    install_package(package_name='twine', prompt_sure=True, python_location=VENVPY, verbose=verbose, force=force)
+    install_package(package_name='twine', prompt_sure=not force, python_location=VENVPY, verbose=verbose, force=force)
     printout(func=package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=verbose)
     try:
         subprocess.call(f'{VENVPY} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"')
@@ -528,7 +528,6 @@ def install_package(package_name:str, import_package_name:str=None, python_locat
 
     python_location = os.path.join(os.getcwd(), python_location)
     cmd:str = f"{python_location} -m pip install {package_name} --upgrade"
-    print(cmd)
     res = subprocess.call(cmd)
     printout(func=install_package.__name__, msg=f"Installed {package_name}", doPrint=verbose)
 # endregion
@@ -683,7 +682,7 @@ def main():
 
 
 
-# 2022-03-15 16:16
+# 2022-03-16 15:05
 if __name__ == "__main__":
     main()
 
