@@ -20,3 +20,6 @@ class TestCreateConnection(unittest.TestCase):
 
         # 3. Assert
         self.assertEqual(result, 25)
+
+if __name__ == '__main__':
+    unittest.main()
