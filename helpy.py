@@ -293,6 +293,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
 
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(PROJFOLDER, 'test', 'example.md'), verbose=verbose, overwrite=force)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
@@ -324,6 +325,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
 
     # Create default folders
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
+    download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(PROJFOLDER, 'test', 'example.md'), verbose=verbose, overwrite=force)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
@@ -683,7 +685,7 @@ def main():
 
 
 
-# 2022-03-16 15:08
+# 2022-03-16 15:35
 if __name__ == "__main__":
     main()
 
