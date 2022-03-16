@@ -2,7 +2,7 @@ import unittest
 # from dotenv import load_dotenv
 # from config.definitions import ROOT_DIR
 
-class TestCreateConnection(unittest.TestCase):
+class TestExample(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
