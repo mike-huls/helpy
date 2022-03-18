@@ -6,7 +6,7 @@ import subprocess
 import importlib.util
 import urllib.request
 VENVPY = "venv/scripts/python.exe"
-PROJECT_DIR = os.path.dirname(__file__)
+# PROJECT_DIR = os.path.dirname(__file__)
 PROJECT_DIR = os.getcwd()
 
 # region HELPY
@@ -656,13 +656,13 @@ def main():
 
             # 1. Check if all required variables are set
             if (len(str(helpySettings.pypi_url)) <= 5):
-                printout(func="push", msg="Please set PyPi Url in .helpy")
+                printout(func="pip", msg="Please set PyPi Url in .helpy")
                 sys.exit(0)
             if (len(str(helpySettings.pypi_username)) <= 5):
-                printout(func="push", msg="Please set PyPi Username in .helpy")
+                printout(func="pip", msg="Please set PyPi Username in .helpy")
                 sys.exit(0)
             if (len(str(helpySettings.pypi_password)) <= 5):
-                printout(func="push", msg="Please set PyPi Password in .helpy")
+                printout(func="pip", msg="Please set PyPi Password in .helpy")
                 sys.exit(0)
 
             if ('requirements.txt' in " ".join(args)):
