@@ -295,6 +295,7 @@ def init_project(verbose: bool = False, force: bool = False, project_name:str="M
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(PROJFOLDER, 'doc', 'example.md'), verbose=verbose, overwrite=force)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, 'test', '__init__.py'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
@@ -327,6 +328,7 @@ def init_package(package_name: str, verbose: bool = False, force: bool = False):
     create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(PROJFOLDER, 'doc', 'example.md'), verbose=verbose, overwrite=force)
     create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=verbose)
+    create_empty_file(filepath=os.path.join(PROJFOLDER, 'test', '__init__.py'), verbose=verbose)
     download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=verbose, overwrite=force)
 
     # Create default files (with content)
@@ -704,7 +706,7 @@ def main():
 
 
 
-# 2022-03-18 10:06
+# 2022-03-21 16:44
 if __name__ == "__main__":
     main()
 
