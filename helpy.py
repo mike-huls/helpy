@@ -455,23 +455,22 @@ def pip_freeze(verbose: bool = False):
         printout(func=pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=verbose)
     except Exception as e:
         printout(func=pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
-def pip_install_package(pypi_url:str, pypi_username:str, pypi_pasword:str, package_name:str, verbose:bool=False, force:bool=False):
+def pip_install_packages(pypi_url:str, pypi_username:str, pypi_pasword:str, package_names:str, verbose:bool=False, force:bool=False):
     """ Installs a package using your custom pypi url that you specified in the settings of helpy """
 
-    printout(func=f"{pip_install_package.__name__}", msg=f"Installing package {package_name}", doPrint=verbose)
+    printout(func=f"{pip_install_packages.__name__}", msg=f"Installing packages {package_names}", doPrint=verbose)
     pypi_url_split = pypi_url.split("://")[1]
-    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {package_name} --upgrade"
+    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {' '.join(package_names)} --upgrade"
     subprocess.call(cmd)
-    printout(func=f"{pip_install_package.__name__}", msg=f"Installed {package_name}", doPrint=verbose)
+    printout(func=f"{pip_install_packages.__name__}", msg=f"Installed {package_names}", doPrint=verbose)
 def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False, force:bool=False):
     """ Installs all packages in the requirements.txt file """
 
-    printout(func=f"{pip_install_package.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
+    printout(func=f"{pip_install_packages.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
     pypi_url_split = pypi_url.split("://")[1]
     cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} -r requirements.txt --upgrade"
     subprocess.call(cmd)
-    printout(func=f"{pip_install_package.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
-
+    printout(func=f"{pip_install_packages.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
 
 def package_is_installed(package_name:str) -> bool:
     """ Returns t/f depending on whether a package is installed in this project
@@ -672,10 +671,12 @@ def main():
             else:
                 # 2. Package name should be set or taken from input
                 package_name = args[0] if (len(args) > 0) else None
-                if (package_name == None):
+                if (len(args) <= 0):
+                # if (package_name == None):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
-                    package_name = input("Install which package?")
-                pip_install_package(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+                    args = [input("Install which package?")]
+
+                pip_install_packages(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_names=args, verbose=VERBOSE, force=DO_FORCE)
         elif (pip_op == 'upgrade'):
             # 1. Check if all required variables are set
             if (len(str(helpySettings.pypi_url)) <= 5):
@@ -693,7 +694,7 @@ def main():
             if (package_name == None):
                 printout(func="tip", msg="you can also provide the package like python helpy.py pip upgrade [packagename]", doPrint=True)
                 package_name = input("Install which package?")
-            pip_install_package(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_name=package_name, verbose=VERBOSE, force=DO_FORCE)
+            pip_install_packages(pypi_url=helpySettings.pypi_url, pypi_username=helpySettings.pypi_username, pypi_pasword=helpySettings.pypi_password, package_names=package_name, verbose=VERBOSE, force=DO_FORCE)
         elif (pip_op == 'freeze'):
             #
             pip_freeze(verbose=VERBOSE)
@@ -706,7 +707,7 @@ def main():
 
 
 
-# 2022-03-21 16:44
+# 2022-03-21 17:10
 if __name__ == "__main__":
     main()
 
