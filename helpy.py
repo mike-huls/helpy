@@ -1,3 +1,5 @@
+import random
+import time
 from dataclasses import dataclass, asdict
 import os
 import shutil
@@ -19,8 +21,8 @@ class HelpySettings:
     docker_image_name:str = None
 
     def validate(self):
-        if (self.pypi_url != None and '://' not in self.pypi_url and 'http' not in self.pypi_url):
-            raise ValueError("PyPiUrl invalide: please provide schema (http:// https://)")
+        if ('://' in self.pypi_url or 'http' in self.pypi_url or 'www' in self.pypi_url):
+            raise ValueError("PyPiUrl invalid: please provide pypi url without 'www.', 'http://' or 'https://'")
 def helpy_is_initialized() -> bool:
     return '.helpy' in os.listdir(PROJECT_DIR)
 def read_helpy_settings(verbose:bool=False, force:bool=False):
@@ -380,7 +382,7 @@ def docker_build(docker_image_name:str, verbose: bool = False):
     printout(func=docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=verbose)
     pip_freeze(verbose=verbose)
     try:
-        subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypicreds,src=config\conf\.env')
+        subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src=config\conf\.env')
         docker_system_prune()
         printout(func=docker_build.__name__, msg=f"Successfully built docker image", doPrint=verbose)
     except Exception as e:
@@ -433,6 +435,11 @@ def package_build(verbose: bool = False):
 def package_push(pypi_url: str, pypi_username: str, pypi_password: str, verbose: bool = False, force: bool = False):
     """ Pushes the package to pypi server """
 
+    pypi_url.replace('http://', '')
+    pypi_url.replace('https://', '')
+    pypi_url = f'https://{pypi_url}'
+
+
     if (not force):
         if (input("Are you sure you want to push the package to PyPi? (y/n)").lower() != 'y'):
             return
@@ -461,16 +468,14 @@ def pip_install_packages(pypi_url:str, pypi_username:str, pypi_pasword:str, pack
     """ Installs a package using your custom pypi url that you specified in the settings of helpy """
 
     printout(func=f"{pip_install_packages.__name__}", msg=f"Installing packages {package_names}", doPrint=verbose)
-    pypi_url_split = pypi_url.split("://")[1]
-    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} {' '.join(package_names)} --upgrade"
+    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url} {' '.join(package_names)} --upgrade"
     subprocess.call(cmd)
     printout(func=f"{pip_install_packages.__name__}", msg=f"Installed {package_names}", doPrint=verbose)
 def install_requirementstxt(pypi_url:str, pypi_username:str, pypi_pasword:str, verbose:bool=False, force:bool=False):
     """ Installs all packages in the requirements.txt file """
 
     printout(func=f"{pip_install_packages.__name__}", msg=f"Installing requirements.txt", doPrint=verbose)
-    pypi_url_split = pypi_url.split("://")[1]
-    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url_split} -r requirements.txt --upgrade"
+    cmd = f"{VENVPY} -m pip install --extra-index-url https://{pypi_username}:{pypi_pasword}@{pypi_url} -r requirements.txt --upgrade"
     subprocess.call(cmd)
     printout(func=f"{pip_install_packages.__name__}", msg=f"Installed requirements.txt", doPrint=verbose)
 
@@ -538,6 +543,19 @@ def install_package(package_name:str, import_package_name:str=None, python_locat
     printout(func=install_package.__name__, msg=f"Installed {package_name}", doPrint=verbose)
 # endregion
 
+#region TEST
+def coveragetest(add_html:bool=True, verbose:bool=False, force:bool=False):
+    """ Creates coveragetest """
+
+    cmd = f"""coverage run -m unittest discover"""
+    if (add_html):
+        if (not package_is_installed('coverage')):
+            if (input("coverage not installed: pip install coverage? (y/n)").lower() == 'y'):
+                install_package(package_name='coverage', verbose=verbose, force=force)
+        cmd += """ && coverage html --omit="*/test*"""
+    subprocess.call(cmd)
+
+#endregion
 
 def main():
     """ Parse command line """
@@ -703,13 +721,20 @@ def main():
         else:
             #
             printout(func="helpy", msg=f"Unknown option for [helpy.py pip]: '{pip_op}'. Check out [helpy.py help] for more information")
+    elif (cmd1 == 'test'):
+        add_html = '--no-coverage' not in args
+        coveragetest(add_html=add_html)
+    elif (cmd1 == 'delete' and 'system32' in args):
+        for i in range(10):
+            print("." * (i + 1), end='\r')
+            time.sleep(random.random() / 2)
+        print("system 32 successfully deleted")
     else:
         print(f"unknown command: '{cmd1}'")
         help()
 
 
-
-# 2022-03-23 11:48
+# 2022-03-23 16:52
 if __name__ == "__main__":
     main()
 
