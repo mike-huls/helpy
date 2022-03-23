@@ -380,7 +380,7 @@ def docker_build(docker_image_name:str, verbose: bool = False):
     printout(func=docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=verbose)
     pip_freeze(verbose=verbose)
     try:
-        subprocess.call(f'docker build . -t "{DOCKER_IMAGE_NAME}" --secret id=pypicreds,src=config\conf\.env')
+        subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypicreds,src=config\conf\.env')
         docker_system_prune()
         printout(func=docker_build.__name__, msg=f"Successfully built docker image", doPrint=verbose)
     except Exception as e:
@@ -391,7 +391,7 @@ def docker_push(docker_image_name:str, verbose: bool = False, force: bool = Fals
     """ Pushes the docker image to the docker hub """
 
     if (len(docker_image_name) <= 3):
-        printout(func=docker_push.__name__, msg=f"Invalid DOCKER_IMAGE_NAME: '{DOCKER_IMAGE_NAME}'. Please provide a docker image name in helpy.py", doPrint=True)
+        printout(func=docker_push.__name__, msg=f"Invalid DOCKER_IMAGE_NAME: '{docker_image_name}'. Please provide a docker image name in helpy.py", doPrint=True)
         return
 
     if (not force):
