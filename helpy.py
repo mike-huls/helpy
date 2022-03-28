@@ -36,6 +36,7 @@ class HelpySettings:
                 quit()
             if ('://' in self.pypi_url or 'http' in self.pypi_url or 'www' in self.pypi_url):
                 printout(func=".helyp", msg="PyPi Url invalid: please provide pypi url without 'www.', 'http://' or 'https://' in .helpy", doPrint=True)
+                quit()
         if (self.pypi_username != None):
             if (len(self.pypi_username) < 3):
                 printout(func=".helyp", msg=f"PyPi Username '{self.pypi_username}' invalid: please provide valid pypi username", doPrint=True)
@@ -164,6 +165,7 @@ class Helpy:
             _helpySettings = self.__load_env_vars_in_helpysettings(_helpySettings)
 
         helpy_settings = HelpySettings(**_helpySettings)
+        helpy_settings.validate()
         self.helpy_settings = helpy_settings
     def __read_helpy_settings(self) -> dict:
         """ Reads the content of .helpy into a HelpySettings and returns """
@@ -316,7 +318,6 @@ class Helpy:
 
         self.load_helpy_settings()
 
-        # for k in fields(HelpyHelper)
         print(
             f"""HELPY version {self.helpy_cur_version()}
 
@@ -777,7 +778,6 @@ def main():
             add_html = '--no-coverage' not in args
             if (add_html):
                 helpyHelper.ensure_package_installed(package_name='coverage')
-            print("jasdlfsaf\nlajsdflkasdf")
             helpyHelper.coveragetest(add_html=add_html)
 
         else:
@@ -785,7 +785,7 @@ def main():
             help()
 
 
-# 2022-03-28 13:41
+# 2022-03-28 13:47
 if __name__ == "__main__":
 
     main()
