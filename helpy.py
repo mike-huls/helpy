@@ -116,8 +116,8 @@ class Helpy:
 
         # Create default files (with content)
         download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(self.project_dir, 'readme.md'), verbose=self.verbose, overwrite=self.force)
-        replace_in_file(filepath=os.path.join(self.project_dir, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text='My project')
+        download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'readme.md'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
         download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(self.project_dir, 'main.py'), verbose=self.verbose, overwrite=self.force)
         download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(self.project_dir, 'Dockerfile'), verbose=self.verbose, overwrite=self.force)
         download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(self.project_dir, '.dockerignore'), verbose=self.verbose, overwrite=self.force)
@@ -126,7 +126,7 @@ class Helpy:
     def init_package(self, package_name: str):
         """ Get files and folder structure"""
         PROJFOLDER = os.getcwd()
-        printout(func=self.init_project.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=self.verbose)
+        printout(func=self.init_package.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=self.verbose)
         FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
         # Create default folders
@@ -370,9 +370,20 @@ class Helpy:
         """ Returns t/f depending on whether a package is installed in this project
             :arg package_name   str     name of the package you're checking
         """
+
         if (package_name == None):
             return False
-        return importlib.util.find_spec(package_name) != None
+
+        # Get pip list output and make neat
+        process = subprocess.Popen([f'{self.helpy_settings.python_location}', '-m', 'pip', 'list'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        list_output = out.decode("utf-8").split("\n")[2:]
+        packages = [pline.split(" ")[0] for pline in list_output if (pline != '')]
+
+
+        return package_name in packages
+        # quit()
+        # return importlib.util.find_spec(package_name) != None
     def install_package(self, package_names:[str], install_globally:bool=False) -> None:
         """ Wrapper around pip install """
 
@@ -388,14 +399,14 @@ class Helpy:
         # cmd_install: str = f"{self.helpy_settings.python_location} -m pip install {extra_index_url} {' '.join(package_names)} --upgrade"
         try:
             subprocess.check_output(cmd_install)
-            printout(func=self.install_package.__name__, msg=f"Installed {package_names}", doPrint=True)
+            printout(func=self.install_package.__name__, msg=f"Installed {', '.join(package_names)}", doPrint=True)
         except subprocess.CalledProcessError as e:
             printout(func=self.package_build.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
     def install_requirements_txt(self) -> None:
         """ """
 
         # 1. Does the requirments.txt file exits in the project dir?
-        if (not os.path.isfile(os.path.join(self.helpy_settings.project_dir, 'requirements.txt'))):
+        if (not os.path.isfile(os.path.join(self.project_dir, 'requirements.txt'))):
             printout(func=self.install_package.__name__, msg=f"requirements.txt does not exist", doPrint=True)
             quit()
 
@@ -418,9 +429,8 @@ class Helpy:
                 try:
                     subprocess.call([self.helpy_settings.python_location, '-m', 'pip', 'freeze'], stdout=file_)
                 except subprocess.CalledProcessError as e:
-                    printout(func=self.package_build.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
-
-            printout(func=self.pip_freeze.__name__, msg=f"Pip freeze requirements succes", doPrint=self.verbose)
+                    printout(func=self.pip_freeze.__name__, msg=f"Error executing pip freeze. Exception: {e}", doPrint=self.verbose)
+            printout(func=self.pip_freeze.__name__, msg=f"Success", doPrint=True)
         except Exception as e:
             printout(func=self.pip_freeze.__name__, msg=f"Pip freeze failed: \n\t'{e}'", doPrint=True)
 
@@ -553,12 +563,30 @@ class Helpy:
     def coveragetest(self, add_html: bool = True):
         """ Creates coveragetest """
 
-        cmd = f"""coverage run -m unittest discover"""
+        cmd_run_tests = f"""{self.helpy_settings.python_location}  -m unittest discover"""
+        cmd_generate_html:str
         if (add_html):
-            cmd += """ && coverage html --omit="*/test*"""
-        subprocess.call(cmd)
+            cmd_run_tests = f"""{self.helpy_settings.python_location} -m coverage run -m unittest discover"""
+            cmd_generate_html = f"""{self.helpy_settings.python_location} -m coverage html --omit="*/test*" """
+
+        try:
+            subprocess.check_output(cmd_run_tests)
+            printout(func=self.coveragetest.__name__, msg=f"Ran tests", doPrint=True)
+        except subprocess.CalledProcessError as e:
+            printout(func=self.coveragetest.__name__, msg=f"Error running tests: {e}", doPrint=self.verbose)
 
 
+        if (add_html):
+            try:
+                subprocess.check_output(cmd_generate_html)
+                printout(func=self.coveragetest.__name__, msg=f"Generated coverage html", doPrint=True)
+            except subprocess.CalledProcessError as e:
+                printout(func=self.coveragetest.__name__, msg=f"Error generating coverage html: {e}", doPrint=self.verbose)
+
+            import webbrowser
+            from config.definitions import ROOT_DIR
+            htmlfilepath = os.path.join(ROOT_DIR, 'htmlcov', 'index.html')
+            webbrowser.open(htmlfilepath, new=2)
 # region UTIL
 def pop_arg_or_exit(arglist: [str], errormessage: str):
     """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
@@ -749,6 +777,7 @@ def main():
             add_html = '--no-coverage' not in args
             if (add_html):
                 helpyHelper.ensure_package_installed(package_name='coverage')
+            print("jasdlfsaf\nlajsdflkasdf")
             helpyHelper.coveragetest(add_html=add_html)
 
         else:
@@ -756,7 +785,7 @@ def main():
             help()
 
 
-# 2022-03-28 12:34
+# 2022-03-23 16:52
 if __name__ == "__main__":
 
     main()
