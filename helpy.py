@@ -265,12 +265,8 @@ class Helpy:
         # Read in the file
         with open(self.helpy_settings.env_file_path, 'r') as file:
             filedata = file.read()
-
-        # Replace the target string
-        filedata = filedata.replace('\r\n', '\n')
-
         # Write the file out again
-        with open(self.helpy_settings.env_file_path, 'w') as file:
+        with open(self.helpy_settings.env_file_path, 'w', newline="\n") as file:
             file.write(filedata)
 
     # Print info about helpy
@@ -801,6 +797,6 @@ def main():
             help()
 
 
-# 2022-03-28 16:40
+# 2022-03-28 17:10
 if __name__ == "__main__":
     main()
