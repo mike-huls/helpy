@@ -335,7 +335,7 @@ class HelpyHelper:
                 if (not os.path.isfile(envfullpath)):
                     printout(
                         func=f"{self.read_helpy_settings.__name__}",
-                        msg=f"THe .env file you specified in .helpy does not exist\n"
+                        msg=f"The .env file you specified in .helpy does not exist\n"
                             f"Please create a .env file at {envfullpath}\n"
                             f"Exiting..", doPrint=True)
                     quit()
@@ -706,7 +706,7 @@ def main():
         # Functions
         if (init_type == 'helpy'):
             #
-            helpyHelper.init_helpy()
+            helpyHelper.init_helpy(helpy_settings.project_dir)
         elif (init_type == 'project'):
             project_name = args[0] if (len(args) > 0) else None
             if (project_name == None):
@@ -799,11 +799,6 @@ def main():
         add_html = '--no-coverage' not in args
         coveragetest(add_html=add_html)
 
-    elif (cmd1 == 'delete' and 'system32' in args):
-        for i in range(10):
-            print("." * (i + 1), end='\r')
-            time.sleep(random.random() / 2)
-        print("system 32 successfully deleted")
     else:
         print(f"unknown command: '{cmd1}'")
         help()
