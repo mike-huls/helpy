@@ -536,7 +536,7 @@ class Helpy:
             quit()
         printout(func=self.docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=self.verbose)
         try:
-            subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src=config\conf\.env')
+            subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path}')
             self.docker_system_prune()
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
         except Exception as e:
