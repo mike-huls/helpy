@@ -1,5 +1,5 @@
 # FINAL image
-FROM python:3.9-alpine AS final
+FROM python:3.9-slim AS final
 
 # BUILD image
 FROM python:3.9-slim AS build
