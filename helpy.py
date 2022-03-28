@@ -292,7 +292,8 @@ class Helpy:
                 printout(func=self.update.__name__, msg="Helpy is up to date", doPrint=True)
                 return
             else:
-                if (input("Update available! Update? (y/n)").lower() != 'y'):
+                printout(func='helpy', msg="Update available! Update? (y/n)", doPrint=True)
+                if (input("").lower() != 'y'):
                     printout(func=self.update.__name__, msg="Skipping helpy update..", doPrint=True)
                     return
 
@@ -536,7 +537,7 @@ class Helpy:
             quit()
         printout(func=self.docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=self.verbose)
         try:
-            cmd_docker_build = f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path}'
+            cmd_docker_build = f'docker build -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path} . '
             subprocess.check_output(cmd_docker_build)
             self.docker_system_prune()
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
@@ -586,7 +587,7 @@ class Helpy:
                 printout(func=self.coveragetest.__name__, msg=f"Error generating coverage html: {e}", doPrint=self.verbose)
 
             import webbrowser
-            from config.definitions import ROOT_DIR
+            from devtest.config.definitions import ROOT_DIR
             htmlfilepath = os.path.join(ROOT_DIR, 'htmlcov', 'index.html')
             webbrowser.open(htmlfilepath, new=2)
 # region UTIL
@@ -786,7 +787,6 @@ def main():
             help()
 
 
-# 2022-03-28 14:31
+# 2022-03-28 15:35
 if __name__ == "__main__":
-
     main()
