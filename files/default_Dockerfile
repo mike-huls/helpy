@@ -10,6 +10,7 @@ ENV PATH="/app/venv/bin:$PATH"
 RUN apt-get update --no-install-recommends
 
 
+
 # install python packages in the venv
 # Make sure PYPI_PASS and PYPI_USER are in the .env and to
 SHELL ["/bin/bash", "-c"]
@@ -24,6 +25,15 @@ RUN --mount=type=secret,id=pypi_creds source /run/secrets/pypi_creds \
 FROM final
 WORKDIR /app/
 ENV PATH="/app/venv/bin:$PATH"
+
+# For SQL SERVER DRIVER
+# ENV ACCEPT_EULA=Y
+# RUN apt-get update -y && apt-get update \
+#   && apt-get install -y --no-install-recommends curl gcc g++ gnupg unixodbc-dev
+# RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+#     && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+#     && apt-get update \
+#     && ACCEPT_EULA=Y apt-get install -y msodbcsql17
 
 # Copy the entire venv from the build layer
 COPY --from=build /app/venv /app/venv
