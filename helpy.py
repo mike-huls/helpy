@@ -536,10 +536,11 @@ class Helpy:
             quit()
         printout(func=self.docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=self.verbose)
         try:
-            subprocess.call(f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path}')
+            cmd_docker_build = f'docker build . -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path}'
+            subprocess.check_output(cmd_docker_build)
             self.docker_system_prune()
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
-        except Exception as e:
+        except subprocess.CalledProcessError as e:
             printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
     def docker_push(self):
         """ Pushes the docker image to the docker hub """
@@ -785,7 +786,7 @@ def main():
             help()
 
 
-# 2022-03-28 14:23
+# 2022-03-28 14:31
 if __name__ == "__main__":
 
     main()
