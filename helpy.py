@@ -260,6 +260,18 @@ class Helpy:
                 returnDict[k] = v
                 # os.environ[k] = v
         return returnDict
+    def __prep_env_file(self):
+
+        # Read in the file
+        with open(self.helpy_settings.env_file_path, 'r') as file:
+            filedata = file.read()
+
+        # Replace the target string
+        filedata = filedata.replace('\r\n', '\n')
+
+        # Write the file out again
+        with open(self.helpy_settings.env_file_path, 'w') as file:
+            file.write(filedata)
 
     # Print info about helpy
     def update(self) -> None:
@@ -537,6 +549,8 @@ class Helpy:
             quit()
         printout(func=self.docker_build.__name__, msg=f"Building docker image '{docker_image_name}'..", doPrint=self.verbose)
         try:
+            # Remove \r from .env file (if created on windows
+            self.__prep_env_file()
             cmd_docker_build = f'docker build -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path} . '
             subprocess.check_output(cmd_docker_build)
             self.docker_system_prune()
@@ -787,6 +801,6 @@ def main():
             help()
 
 
-# 2022-03-28 15:35
+# 2022-03-28 16:40
 if __name__ == "__main__":
     main()
