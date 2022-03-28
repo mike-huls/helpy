@@ -9,7 +9,7 @@ class TestExample(unittest.TestCase):
         # load_dotenv(dotenv_path=os.path.join(ROOT_DIR, 'config', 'conf', '.env'))
 
     def test_isEqual(self):
-        """ Create valid SQL SERVER db engine """
+        """ Test example """
 
         # 1. Arrange
         def function_from_project(a:float, b:float):
