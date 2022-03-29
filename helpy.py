@@ -313,6 +313,7 @@ class Helpy:
         # Feedback
         remote_idx_dateline = remote_idx_initmainline - 1
         printout(func=self.update.__name__, msg=f"updated helpy to {remote_lines[remote_idx_dateline].replace('# ', '')}", doPrint=True)
+
     def helpy_cur_version(self) -> str:
         NAME_MAIN_STRING = 'if __name__ == "__main__":'
         with open(__file__, 'r') as rfile:
@@ -598,8 +599,7 @@ class Helpy:
                 printout(func=self.coveragetest.__name__, msg=f"Error generating coverage html: {e}", doPrint=self.verbose)
 
             import webbrowser
-            from devtest.config.definitions import ROOT_DIR
-            htmlfilepath = os.path.join(ROOT_DIR, 'htmlcov', 'index.html')
+            htmlfilepath = os.path.join(self.project_dir, 'htmlcov', 'index.html')
             webbrowser.open(htmlfilepath, new=2)
 # region UTIL
 def pop_arg_or_exit(arglist: [str], errormessage: str):
