@@ -411,7 +411,10 @@ class Helpy:
             cmd_install = f"{self.helpy_settings.python_location} -m" + cmd_install
         # cmd_install: str = f"{self.helpy_settings.python_location} -m pip install {extra_index_url} {' '.join(package_names)} --upgrade"
         try:
-            subprocess.check_output(cmd_install)
+            if (self.verbose):
+                subprocess.call(cmd_install)
+            else:
+                subprocess.check_output(cmd_install)
             printout(func=self.install_package.__name__, msg=f"Installed {', '.join(package_names)}", doPrint=True)
         except subprocess.CalledProcessError as e:
             printout(func=self.package_build.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
@@ -431,7 +434,10 @@ class Helpy:
 
         cmd_install: str = f"{self.helpy_settings.python_location} -m pip install {extra_index_url} -r requirements.txt --upgrade"
         try:
-            subprocess.check_output(cmd_install)
+            if (self.verbose):
+                subprocess.call(cmd_install)
+            else:
+                subprocess.check_output(cmd_install)
             printout(func=self.install_package.__name__, msg=f"Installed requirements.txt", doPrint=True)
         except subprocess.CalledProcessError as e:
             printout(func=self.package_build.__name__, msg=f"Error installing requirements.txt: {e}", doPrint=self.verbose)
@@ -463,7 +469,10 @@ class Helpy:
         # 2. Call setup function
         setup_cmd = f"{self.helpy_settings.python_location} setup.py sdist"
         try:
-            subprocess.check_output(setup_cmd)
+            if (self.verbose):
+                subprocess.call(setup_cmd)
+            else:
+                subprocess.check_output(setup_cmd)
         except subprocess.CalledProcessError as e:
             printout(func=self.package_build.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
     def package_push(self):
@@ -486,7 +495,10 @@ class Helpy:
         printout(func=self.package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=self.verbose)
         try:
             cmd_push_package = f'{self.helpy_settings.python_location} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"'
-            subprocess.check_output(cmd_push_package)
+            if (self.verbose):
+                subprocess.call(cmd_push_package)
+            else:
+                subprocess.check_output(cmd_push_package)
             printout(func=self.package_push.__name__, msg=f"Successfully pushed package to '{pypi_url}'", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
             printout(func=self.package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
@@ -530,7 +542,10 @@ class Helpy:
         env_file_add = f"--env-file {self.helpy_settings.env_file_path}" if (self.helpy_settings.env_file_path) else ""
         cmd_serve = f'{self.helpy_settings.python_location} -m uvicorn main:app {env_file_add} --reload'
         try:
-            subprocess.check_output(cmd_serve)
+            if (self.verbose):
+                subprocess.call(cmd_serve)
+            else:
+                subprocess.check_output(cmd_serve)
         except subprocess.CalledProcessError as e:
             printout(func=self.serve_fastapi.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
 
@@ -551,7 +566,10 @@ class Helpy:
             # Remove \r from .env file (if created on windows
             self.__prep_env_file()
             cmd_docker_build = f'docker build -t "{docker_image_name}" --secret id=pypi_creds,src={self.helpy_settings.env_file_path} . '
-            subprocess.check_output(cmd_docker_build)
+            if (self.verbose):
+                subprocess.call(cmd_docker_build)
+            else:
+                subprocess.check_output(cmd_docker_build)
             self.docker_system_prune()
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
@@ -586,7 +604,10 @@ class Helpy:
             cmd_generate_html = f"""{self.helpy_settings.python_location} -m coverage html --omit="*/test*" """
 
         try:
-            subprocess.check_output(cmd_run_tests)
+            if (self.verbose):
+                subprocess.call(cmd_run_tests)
+            else:
+                subprocess.check_output(cmd_run_tests)
             printout(func=self.coveragetest.__name__, msg=f"Ran tests", doPrint=True)
         except subprocess.CalledProcessError as e:
             printout(func=self.coveragetest.__name__, msg=f"Error running tests: {e}", doPrint=self.verbose)
@@ -594,7 +615,10 @@ class Helpy:
 
         if (add_html):
             try:
-                subprocess.check_output(cmd_generate_html)
+                if (self.verbose):
+                    subprocess.call(cmd_generate_html)
+                else:
+                    subprocess.check_output(cmd_generate_html)
                 printout(func=self.coveragetest.__name__, msg=f"Generated coverage html", doPrint=True)
             except subprocess.CalledProcessError as e:
                 printout(func=self.coveragetest.__name__, msg=f"Error generating coverage html: {e}", doPrint=self.verbose)
@@ -799,6 +823,6 @@ def main():
             help()
 
 
-# 2022-03-29 09:59
-if __name__ == "__main__":
+# 2022-03-29 10:03
+if (__name__ == "__main__"):
     main()
