@@ -297,7 +297,7 @@ class Helpy:
         if (not self.force):
             helpy_up_to_date = curfile_date == remote_date
             if (helpy_up_to_date):
-                printout(func=self.update.__name__, msg="Helpy is up to date", doPrint=True)
+                printout(func=self.update.__name__, msg="Helpy is up to date", doPrint=self.verbose)
                 return
             else:
                 printout(func='helpy', msg="Update available! Update? (y/n)", doPrint=True)
