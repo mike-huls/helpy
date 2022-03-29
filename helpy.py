@@ -357,9 +357,10 @@ class Helpy:
             docker push                     pushes the image to dockerhub. Set username in .env or from cmd
             package build                   uses the setup.py to build the package
             package push                    pushes the package to the pypi specified in the .env
-            pip install [packagename]       installs a package using pypi OR the pypi specified in helpy (PYPI_URL)
+            pip install [packagename]       installs one or more packages (space seperated) using pypi OR the pypi specified in helpy (PYPI_URL)
             pip install requirements.txt    installs a requirements.txt file using pypi OR the pypi specified in the helpy (PYPI_URL)
             pip freeze                      freezes all dependencies in a requirements.txt
+            test                            Unittests all test in the /test folder and adds a coverage html. Add --no-coverage to disable generating coverage 
         Add the -v flag for verbose output
         Add the -y or -f flag to confirm all dialogs"""
         printout(func="help", msg=helpmessage, doPrint=True)
@@ -677,7 +678,7 @@ def main():
 
 
     # Init HELPY
-    helpyHelper = Helpy(verbose=VERBOSE, force=DO_FORCE)  # Inits helpy and loads the settings (and optionally the .env file) and validate
+    helpyItself = Helpy(verbose=VERBOSE, force=DO_FORCE)  # Inits helpy and loads the settings (and optionally the .env file) and validate
 
 
     # Parse arguments - Must provide at least one argument
@@ -688,13 +689,13 @@ def main():
 
 
     # Check for updates
-    if (cmd1 != 'update'):      helpyHelper.update()
+    if (cmd1 != 'update'):      helpyItself.update()
 
     # HELPY functions
-    if (cmd1 == 'update'):      helpyHelper.update()
-    elif (cmd1 == 'help'):      helpyHelper.help()
-    elif (cmd1 == 'info'):      helpyHelper.display_info()
-    elif (cmd1 == 'version'):   print(f"Helpy version {helpyHelper.helpy_cur_version()}")
+    if (cmd1 == 'update'):      helpyItself.update()
+    elif (cmd1 == 'help'):      helpyItself.help()
+    elif (cmd1 == 'info'):      helpyItself.display_info()
+    elif (cmd1 == 'version'):   print(f"Helpy version {helpyItself.helpy_cur_version()}")
     elif (cmd1 == 'init'):
         # Get init_type
         init_type = pop_arg_or_exit(arglist=args, errormessage="[helpy.py init] requires another argument. Check out [helpy.py help] for more information")
@@ -702,25 +703,25 @@ def main():
         # Functions
         if (init_type == 'helpy'):
             #
-            helpyHelper = Helpy(verbose=VERBOSE, force=DO_FORCE)
+            helpyItself = Helpy(verbose=VERBOSE, force=DO_FORCE)
         elif (init_type == 'project'):
             project_name = args[0] if (len(args) > 0) else None
             if (project_name == None):
                 project_name = input("Project name?")
-            helpyHelper.init_project(project_name=project_name)
+            helpyItself.init_project(project_name=project_name)
         elif (init_type == 'package'):
             package_name = args[0] if (len(args) > 0) else None
             if (package_name == None):
                 package_name = input("What is this package called?")
-            helpyHelper.init_package(package_name=package_name)
+            helpyItself.init_package(package_name=package_name)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy.py help] for more information")
 
     # Regular functions (we need helpy settings and venv for this
     else:
         # Make sure we load the settings and have an .env
-        helpyHelper.load_helpy_settings()
-        helpyHelper.ensure_venv()
+        helpyItself.load_helpy_settings()
+        helpyItself.ensure_venv()
 
         if (cmd1 == 'serve'):
             # Get application type
@@ -734,18 +735,18 @@ def main():
             if (serve_op == 'list'):
                 printout(func="helpy", msg=f"Available apps: {available_apps} \t\t Example: [helpy.py serve {available_apps[0]}]")
             elif (serve_op == 'fastapi'):
-                helpyHelper.ensure_package_installed(package_name='fastapi')
-                helpyHelper.ensure_package_installed(package_name='uvicorn')
-                helpyHelper.serve_fastapi()
+                helpyItself.ensure_package_installed(package_name='fastapi')
+                helpyItself.ensure_package_installed(package_name='uvicorn')
+                helpyItself.serve_fastapi()
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py serve]: '{serve_op}'. Check out [helpy.py serve list] for more information")
         elif (cmd1 == 'docker'):
             docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py docker] requires another argument. Check out [helpy.py help] for more information")
             if (docker_op == 'build'):
-                helpyHelper.pip_freeze()
-                helpyHelper.docker_build()
+                helpyItself.pip_freeze()
+                helpyItself.docker_build()
             elif (docker_op == 'push'):
-                helpyHelper.docker_push()
+                helpyItself.docker_push()
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py docker]: '{docker_op}'. Check out [helpy.py help] for more information")
         elif (cmd1 == 'package'):
@@ -753,12 +754,12 @@ def main():
 
             if (package_op == 'build'):
                 #
-                helpyHelper.ensure_package_installed(package_name='twine')
-                helpyHelper.pip_freeze()
-                helpyHelper.package_build()
+                helpyItself.ensure_package_installed(package_name='twine')
+                helpyItself.pip_freeze()
+                helpyItself.package_build()
             elif (package_op == 'push'):
-                helpyHelper.ensure_package_installed(package_name='twine')
-                helpyHelper.package_push()
+                helpyItself.ensure_package_installed(package_name='twine')
+                helpyItself.package_push()
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py package]: '{package_op}'. Check out [helpy.py help] for more information")
         elif (cmd1 == 'pip'):
@@ -766,22 +767,22 @@ def main():
             if (pip_op == 'install'):
 
                 if ('requirements.txt' in " ".join(args)):
-                    helpyHelper.install_requirements_txt()
+                    helpyItself.install_requirements_txt()
                 else:
                     # 2. Package name should be set or taken from input
                     if (len(args) <= 0):
                         printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                         args = [input("Install which package?")]
 
-                    helpyHelper.install_package(package_names=args)
+                    helpyItself.install_package(package_names=args)
             elif (pip_op == 'upgrade' or pip_op == 'update'):
                 if (len(args) <= 0):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     args = [input(f"{pip_op} which package?")]
-                helpyHelper.install_package(package_names=args)
+                helpyItself.install_package(package_names=args)
             elif (pip_op == 'freeze'):
                 #
-                helpyHelper.pip_freeze()
+                helpyItself.pip_freeze()
             else:
                 #
                 printout(func="helpy", msg=f"Unknown option for [helpy.py pip]: '{pip_op}'. Check out [helpy.py help] for more information")
@@ -789,14 +790,14 @@ def main():
 
             add_html = '--no-coverage' not in args
             if (add_html):
-                helpyHelper.ensure_package_installed(package_name='coverage')
-            helpyHelper.coveragetest(add_html=add_html)
+                helpyItself.ensure_package_installed(package_name='coverage')
+            helpyItself.coveragetest(add_html=add_html)
 
         else:
             print(f"unknown command: '{cmd1}'")
             help()
 
 
-# 2022-03-28 17:10
+# 2022-03-29 09:17
 if __name__ == "__main__":
     main()
