@@ -824,5 +824,5 @@ def main():
 
 
 # 2022-03-29 10:03
-if (__name__ == "__main__"):
+if __name__ == "__main__":
     main()
