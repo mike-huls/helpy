@@ -762,6 +762,7 @@ def main():
             elif (serve_op == 'fastapi'):
                 helpyItself.ensure_package_installed(package_name='fastapi')
                 helpyItself.ensure_package_installed(package_name='uvicorn')
+                helpyItself.ensure_package_installed(package_name='python-dotenv', import_package_name='dotenv')
                 helpyItself.serve_fastapi()
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py serve]: '{serve_op}'. Check out [helpy.py serve list] for more information")
@@ -823,6 +824,6 @@ def main():
             help()
 
 
-# 2022-03-29 10:04
+# 2022-03-29 14:58
 if __name__ == "__main__":
     main()
