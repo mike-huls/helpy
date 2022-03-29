@@ -257,8 +257,9 @@ class Helpy:
                     v = kv[1] if (len(kv) == 2) else "=".join(kv[1:])
                 if (len(v) <= 0):
                     continue
+                v = v.strip("'")
+                v = v.strip('"')
                 returnDict[k] = v
-                # os.environ[k] = v
         return returnDict
     def __prep_env_file(self):
 
@@ -383,7 +384,7 @@ class Helpy:
             :arg package_name   str     name of the package you're checking
         """
 
-        if (package_name == None):
+        if (package_name == None or package_name == 'venv'):
             return False
 
         # Get pip list output and make neat
