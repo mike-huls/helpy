@@ -117,8 +117,8 @@ class Helpy:
 
         # Create default files (with content)
         download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'readme.md'), verbose=self.verbose, overwrite=self.force)
-        replace_in_file(filepath=os.path.join(self.project_dir, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
+        download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'README.md'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'README.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
         download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(self.project_dir, 'main.py'), verbose=self.verbose, overwrite=self.force)
         download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(self.project_dir, 'Dockerfile'), verbose=self.verbose, overwrite=self.force)
         download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(self.project_dir, '.dockerignore'), verbose=self.verbose, overwrite=self.force)
@@ -139,8 +139,8 @@ class Helpy:
 
         # Create default files (with content)
         download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'readme.md'), verbose=self.verbose, overwrite=self.force)
-        replace_in_file(filepath=os.path.join(PROJFOLDER, 'readme.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+        download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'README.md'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(PROJFOLDER, 'README.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
         download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=self.verbose, overwrite=self.force)
         download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=self.verbose, overwrite=self.force)
         replace_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
