@@ -576,6 +576,27 @@ class Helpy:
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
             printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
+    def docker_run(self, port_host:int, port_container:int, detached:bool=False):
+        """ Runs your contianer """
+
+
+        docker_image_name = self.helpy_settings.docker_image_name
+        if (docker_image_name == None or len(docker_image_name) < 3):
+            printout(func=self.docker_build.__name__, msg="Please provide a docker image name in .helpy", doPrint=True)
+            quit()
+        printout(func=self.docker_build.__name__, msg=f"Running docker container from image '{docker_image_name}'..", doPrint=self.verbose)
+
+        try:
+            # Remove \r from .env file (if created on windows
+            cmd_docker_run = f'docker run -p {port_host}:{port_container} {docker_image_name} {"-d" if detached else ""} '
+            if (self.verbose):
+                subprocess.call(cmd_docker_run)
+            else:
+                subprocess.check_output(cmd_docker_run)
+            printout(func=self.docker_build.__name__, msg=f"Run docker container success", doPrint=self.verbose)
+        except subprocess.CalledProcessError as e:
+            printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
+
     def docker_push(self):
         """ Pushes the docker image to the docker hub """
 
@@ -773,6 +794,19 @@ def main():
             if (docker_op == 'build'):
                 helpyItself.pip_freeze()
                 helpyItself.docker_build(prune_afterwards='--prune' in args)
+            elif (docker_op == 'run'):
+
+                # Get ports for host and container
+                port_arg = [a for a in args if (':' in a)]
+                port_host, port_container = port_arg[0].split(":") if (len(port_arg) > 0) else (None, None)
+
+                # Check args
+                if (port_host == None or port_container == None):
+                    printout(func='helpy', msg=f"host port or conainer port not provided correctly. Example: python helpy.py docker run 8001:80", doPrint=True)
+                    quit()
+
+
+                helpyItself.docker_run(port_host=port_host, port_container=port_container, detached=("-d" in args))
             elif (docker_op == 'push'):
                 helpyItself.docker_push()
             elif (docker_op == 'prune'):
@@ -828,6 +862,6 @@ def main():
             help()
 
 
-# 2022-04-01 15:28
+# 2022-04-01 16:28
 if __name__ == "__main__":
     main()
