@@ -576,7 +576,7 @@ class Helpy:
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
             printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
-    def docker_run(self, port_host:int, port_container:int, detached:bool=False):
+    def docker_run(self, port_host:int=None, port_container:int=None, detached:bool=False):
         """ Runs your contianer """
 
 
@@ -586,9 +586,10 @@ class Helpy:
             quit()
         printout(func=self.docker_build.__name__, msg=f"Running docker container from image '{docker_image_name}'..", doPrint=self.verbose)
 
+        port_mapping = f"-p {port_host}:{port_container}" if (port_host != None and port_container != None) else ""
         try:
             # Remove \r from .env file (if created on windows
-            cmd_docker_run = f'docker run -p {port_host}:{port_container} {docker_image_name} {"-d" if detached else ""} '
+            cmd_docker_run = f'docker run {port_mapping} {docker_image_name} {"-d" if detached else ""} '
             if (self.verbose):
                 subprocess.call(cmd_docker_run)
             else:
