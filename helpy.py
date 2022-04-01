@@ -356,7 +356,8 @@ class Helpy:
             init package                    prepares the current folder for a python package
             serve fastapi                   tries to spin up the current project as a fastapi project 
             docker build                    builds the image specified in the dockerfile
-            docker push                     pushes the image to dockerhub. Set username in .env or from cmd
+            docker push                     pushes the image to dockerhub. Set username in .env or from cmd (add --prune to prune afterwards)
+            docker prune                    performs a docker system prune to clean up your system
             package build                   uses the setup.py to build the package
             package push                    pushes the package to the pypi specified in the .env
             pip install [packagename]       installs one or more packages (space seperated) using pypi OR the pypi specified in helpy (PYPI_URL)
@@ -555,7 +556,7 @@ class Helpy:
             subprocess.call(f"docker system prune -f")
         except Exception as e:
             printout(func=self.docker_system_prune.__name__, msg=f"Docker system prune failed: \t\n'{e}'", doPrint=True)
-    def docker_build(self):
+    def docker_build(self, prune_afterwards:bool):
 
         docker_image_name = self.helpy_settings.docker_image_name
         if (docker_image_name == None or len(docker_image_name) < 3):
@@ -570,7 +571,8 @@ class Helpy:
                 subprocess.call(cmd_docker_build)
             else:
                 subprocess.check_output(cmd_docker_build)
-            self.docker_system_prune()
+            if (prune_afterwards):
+                self.docker_system_prune()
             printout(func=self.docker_build.__name__, msg=f"Successfully built docker image", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
             printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
@@ -770,9 +772,11 @@ def main():
             docker_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py docker] requires another argument. Check out [helpy.py help] for more information")
             if (docker_op == 'build'):
                 helpyItself.pip_freeze()
-                helpyItself.docker_build()
+                helpyItself.docker_build(prune_afterwards='--prune' in args)
             elif (docker_op == 'push'):
                 helpyItself.docker_push()
+            elif (docker_op == 'prune'):
+                helpyItself.docker_system_prune()
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py docker]: '{docker_op}'. Check out [helpy.py help] for more information")
         elif (cmd1 == 'package'):
@@ -824,6 +828,6 @@ def main():
             help()
 
 
-# 2022-03-29 14:58
+# 2022-04-01 15:28
 if __name__ == "__main__":
     main()
