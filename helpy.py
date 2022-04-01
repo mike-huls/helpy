@@ -587,12 +587,10 @@ class Helpy:
         printout(func=self.docker_build.__name__, msg=f"Running docker container from image '{docker_image_name}'..", doPrint=self.verbose)
 
         port_mapping = f"-p {port_host}:{port_container}" if (port_host != None and port_container != None) else ""
-        pass_env_str = f"-env-file {self.helpy_settings.env_file_path}" if pass_env_file else ""
+        pass_env_str = f"--env-file {self.helpy_settings.env_file_path}" if pass_env_file else ""
         try:
             # Remove \r from .env file (if created on windows
             cmd_docker_run = f'docker run {port_mapping} {pass_env_str} {docker_image_name} {"-d" if detached else ""} '
-            print(cmd_docker_run)
-            quit()
             if (self.verbose):
                 subprocess.call(cmd_docker_run)
             else:
@@ -804,13 +802,8 @@ def main():
                 port_arg = [a for a in args if (':' in a)]
                 port_host, port_container = port_arg[0].split(":") if (len(port_arg) > 0) else (None, None)
 
-                # Check args
-                if (port_host == None or port_container == None):
-                    printout(func='helpy', msg=f"host port or conainer port not provided correctly. Example: python helpy.py docker run 8001:80", doPrint=True)
-                    quit()
 
-
-                helpyItself.docker_run(port_host=port_host, port_container=port_container, detached=("-d" in args))
+                helpyItself.docker_run(port_host=port_host, port_container=port_container, detached=("-d" in args), pass_env_file="-e" in args)
             elif (docker_op == 'push'):
                 helpyItself.docker_push()
             elif (docker_op == 'prune'):
@@ -866,6 +859,6 @@ def main():
             help()
 
 
-# 2022-04-01 16:28
+# 2022-04-01 16:50
 if __name__ == "__main__":
     main()
