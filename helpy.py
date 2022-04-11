@@ -50,7 +50,6 @@ class HelpySettings:
             quit()
 
 
-
 class Helpy:
 
     helpy_settings:HelpySettings = None
@@ -344,7 +343,7 @@ class Helpy:
         DOCKER:
         image name: \t {self.helpy_settings.docker_image_name if (self.helpy_settings.docker_image_name) else ""}
         """)
-    def help(self):
+    def helpy_help(self):
         helpmessage = f"""
         Welcome to Helpy (v.{self.helpy_cur_version()})
         Call [python helpy.py] with any of the following commands:
@@ -651,6 +650,8 @@ class Helpy:
             import webbrowser
             htmlfilepath = os.path.join(self.project_dir, 'htmlcov', 'index.html')
             webbrowser.open(htmlfilepath, new=2)
+
+
 # region UTIL
 def pop_arg_or_exit(arglist: [str], errormessage: str):
     """ Tries to pop an arg from the list. If this is not possible: display errormessage and exit """
@@ -733,7 +734,7 @@ def main():
 
     # Parse arguments - Must provide at least one argument
     if (len(args) == 0):
-        help()
+        helpyItself.helpy_help()
         quit()
     cmd1 = pop_arg_or_exit(arglist=args, errormessage="Helpy expects at least one argument. Check out [helpy.py help] for more information")
 
@@ -743,7 +744,7 @@ def main():
 
     # HELPY functions
     if (cmd1 == 'update'):      helpyItself.update()
-    elif (cmd1 == 'help'):      helpyItself.help()
+    elif (cmd1 == 'help'):      helpyItself.helpy_help()
     elif (cmd1 == 'info'):      helpyItself.display_info()
     elif (cmd1 == 'version'):   print(f"Helpy version {helpyItself.helpy_cur_version()}")
     elif (cmd1 == 'init'):
@@ -856,9 +857,9 @@ def main():
 
         else:
             print(f"unknown command: '{cmd1}'")
-            help()
+            helpyItself.helpy_help()
 
 
-# 2022-04-01 16:50
+# 2022-04-11 16:09
 if __name__ == "__main__":
     main()
