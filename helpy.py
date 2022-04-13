@@ -351,10 +351,12 @@ class Helpy:
             info                            displays information about helpy, including constants you've set
             version                         displays information about the current version of helpy 
             update                          updates helpy if there is a new version
+            create venv                     Creates a virtualenv
             init project                    prepares the current folder for a python project
             init package                    prepares the current folder for a python package
             serve fastapi                   tries to spin up the current project as a fastapi project 
             docker build                    builds the image specified in the dockerfile
+            docker run                      runs your image (port_host:port_container, -d for detached (default False), -e to pass .env file (default False)
             docker push                     pushes the image to dockerhub. Set username in .env or from cmd (add --prune to prune afterwards)
             docker prune                    performs a docker system prune to clean up your system
             package build                   uses the setup.py to build the package
@@ -397,7 +399,7 @@ class Helpy:
         return package_name in packages
         # quit()
         # return importlib.util.find_spec(package_name) != None
-    def install_package(self, package_names:[str], install_globally:bool=False) -> None:
+    def install_package(self, package_names:[str], install_globally:bool=False, upgrade:bool=False) -> None:
         """ Wrapper around pip install """
 
         # 1. Add extra-index-url?
@@ -406,7 +408,8 @@ class Helpy:
             extra_index_url = f"--extra-index-url https://{self.helpy_settings.pypi_username}:{self.helpy_settings.pypi_password}@{self.helpy_settings.pypi_url}"
 
         # 2. Create and execute install command
-        cmd_install: str = f"pip install {extra_index_url} {' '.join(package_names)} --upgrade"
+        do_upgrade = "--upgrade" if upgrade else ""
+        cmd_install: str = f"pip install {extra_index_url} {' '.join(package_names)} {do_upgrade}"
         if (not install_globally):
             cmd_install = f"{self.helpy_settings.python_location} -m" + cmd_install
         # cmd_install: str = f"{self.helpy_settings.python_location} -m pip install {extra_index_url} {' '.join(package_names)} --upgrade"
@@ -504,10 +507,11 @@ class Helpy:
             printout(func=self.package_push.__name__, msg=f"Failed push package to '{pypi_url}': \n\t'{e}'", doPrint=True)
 
     # Virtual environment
-    def ensure_venv(self):
+    def ensure_venv(self, python_path:str=None):
         """ Creates a virtual environment in a project folder """
 
         # 1. Venv location is set
+        pypath = python_path if (python_path != None) else "python.exe"
         if (self.helpy_settings.venv_location == None):
             printout(func="ensure_venv", msg=f"Provided venv path ('{self.helpy_settings.venv_location}') is not set. Please specify the location of your virtualenv in .helpy.", doPrint=True)
             quit()
@@ -522,7 +526,7 @@ class Helpy:
             printout(func="ensure_venv", msg=f"Venv exists.", doPrint=self.verbose)
             return
         if (not self.force):
-            if (input(f"Virtual env not detected. Create venv at {venv_folder_path_full}? (y/n)").lower() != 'y'):
+            if (input(f"Virtual env not detected. Create venv at {venv_folder_path_full} with python {pypath}? (y/n)").lower() != 'y'):
                 printout(func="ensure_venv", msg=f"Venv not created. Exiting..", doPrint=True)
                 quit()
 
@@ -530,9 +534,10 @@ class Helpy:
         if (not self.package_is_installed(package_name='venv')):
             printout(func="ensure_venv", msg=f"Installing venv", doPrint=self.verbose)
             self.install_package(package_names=['venv'], install_globally=True)
-        cmd_create_venv = f'python.exe -m venv {venv_folder_path_full}'
+        cmd_create_venv = f'{pypath} -m venv {venv_folder_path_full}'
+        printout(func="ensure_venv", msg=f"Creating venv..", doPrint=True)
         subprocess.call(cmd_create_venv)
-        printout(func="ensure_venv", msg=f"Venv created", doPrint=self.verbose)
+        printout(func="ensure_venv", msg=f"Venv created", doPrint=True)
 
     # Serve
     def serve_fastapi(self):
@@ -767,6 +772,17 @@ def main():
             helpyItself.init_package(package_name=package_name)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy.py help] for more information")
+    elif (cmd1 == 'create'):
+        create_op = pop_arg_or_exit(arglist=args, errormessage="[helpy.py create] requires another argument. Check out [helpy.py help] for more information")
+
+        # Functions
+        if (create_op in ['venv', 'virtualenv']):
+            helpyItself.load_helpy_settings()
+
+            pypath = input("Please provide the path to your verion of python.exe you would like the venv to be based on (leave empty for default Python:")
+            helpyItself.ensure_venv(python_path=pypath)
+        else:
+            printout(func="helpy", msg=f"Unknown option for helpy create: '{create_op}'. Check out [helpy.py help] for more information")
 
     # Regular functions (we need helpy settings and venv for this
     else:
@@ -841,7 +857,7 @@ def main():
                 if (len(args) <= 0):
                     printout(func="tip", msg="you can also provide the package like python helpy.py pip install [packagename]", doPrint=True)
                     args = [input(f"{pip_op} which package?")]
-                helpyItself.install_package(package_names=args)
+                helpyItself.install_package(package_names=args, upgrade=True)
             elif (pip_op == 'freeze'):
                 #
                 helpyItself.pip_freeze()
@@ -860,6 +876,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-11 16:09
+# 2022-04-13 12:03
 if __name__ == "__main__":
     main()
