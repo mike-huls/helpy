@@ -313,7 +313,6 @@ class Helpy:
         # Feedback
         remote_idx_dateline = remote_idx_initmainline - 1
         printout(func=self.update.__name__, msg=f"updated helpy to {remote_lines[remote_idx_dateline].replace('# ', '')}", doPrint=True)
-
     def helpy_cur_version(self) -> str:
         NAME_MAIN_STRING = 'if __name__ == "__main__":'
         with open(__file__, 'r') as rfile:
@@ -326,14 +325,19 @@ class Helpy:
     def display_info(self) -> None:
         """ """
 
+
         self.load_helpy_settings()
 
+        cmd_pyversion = f"{self.helpy_settings.venv_location}/Scripts/python.exe -V"
+        print(cmd_pyversion)
+        quit()
         print(
-            f"""HELPY version {self.helpy_cur_version()}
+        f"""HELPY version {self.helpy_cur_version()}
 
         ENVIRONMENT
         VENV_LOCATION: \t {self.helpy_settings.venv_location}
         ENV_FILE_PATH: \t {self.helpy_settings.env_file_path}
+        PYTHON_VERSION: \t
 
         PYPI:
         PYPI URL: \t {self.helpy_settings.pypi_url if (self.helpy_settings.pypi_url) else ""}
@@ -602,7 +606,6 @@ class Helpy:
             printout(func=self.docker_build.__name__, msg=f"Run docker container success", doPrint=self.verbose)
         except subprocess.CalledProcessError as e:
             printout(func=self.docker_build.__name__, msg=f"Failed to build docker image: \n\t'{e}", doPrint=True)
-
     def docker_push(self):
         """ Pushes the docker image to the docker hub """
 
