@@ -813,7 +813,7 @@ def main():
             api_name = args[0] if (len(args) > 0) else None
             if (api_name == None):
                 api_name = input("What is this API called?")
-            helpyItself.init_fastapi(package_name=api_name)
+            helpyItself.init_fastapi(api_name=api_name)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'create'):
