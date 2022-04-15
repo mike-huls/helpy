@@ -444,6 +444,8 @@ class Helpy:
     def install_package(self, package_names:[str], install_globally:bool=False, upgrade:bool=False) -> None:
         """ Wrapper around pip install """
 
+        printout(func=self.package_build.__name__, msg=f"Installing packages..", doPrint=True)
+
         # 1. Add extra-index-url?
         extra_index_url = ""
         if (self.helpy_settings.pypi_url != None and self.helpy_settings.pypi_url != None and self.helpy_settings.pypi_url != None):
@@ -586,10 +588,12 @@ class Helpy:
         """ Makes it so that you can serve fastapi"""
 
         # 1. Serve fastapi
+        printout(func=self.serve_fastapi.__name__, msg=f"Serving FastAPI at localhost:{port}", doPrint=True)
+
         env_file_add = f"--env-file {self.helpy_settings.env_file_path}" if (self.helpy_settings.env_file_path) else ""
         cmd_serve = f'{self.helpy_settings.python_location} -m uvicorn main:app {env_file_add} --reload --port {port}'
         try:
-            webbrowser.open(f"localhost:{port}", new=2)
+            webbrowser.open(f"http://localhost:{port}", new=2)
             if (self.verbose):
                 subprocess.call(cmd_serve)
             else:
@@ -932,6 +936,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-15 14:53
+# 2022-04-15 14:56
 if __name__ == "__main__":
     main()
