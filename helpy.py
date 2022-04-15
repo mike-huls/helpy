@@ -54,6 +54,7 @@ class Helpy:
 
     helpy_settings:HelpySettings = None
     project_dir: str = os.getcwd()
+    FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
     verbose: bool
     force: bool
 
@@ -94,13 +95,12 @@ class Helpy:
         """ Needs certain files and folder structure always. """
 
         printout(func=self.init_project.__name__, msg=f"Initializing new project '{project_name}' at {self.project_dir}..", doPrint=self.verbose)
-        FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
 
         # config/conf/.env
         create_folder(folderpath=os.path.join(self.project_dir, 'config'), verbose=self.verbose)
         create_folder(folderpath=os.path.join(self.project_dir, 'config', 'conf'), verbose=self.verbose)
-        download_file(url=f"{FILES_URL}/default_env", filepath=os.path.join(self.project_dir, 'config', 'conf', '.env'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_definitions.py", filepath=os.path.join(self.project_dir, 'config', 'definitions.py'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_env", filepath=os.path.join(self.project_dir, 'config', 'conf', '.env'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_definitions.py", filepath=os.path.join(self.project_dir, 'config', 'definitions.py'), verbose=self.verbose, overwrite=self.force)
 
         # Create venv
         # printout(func=self.init_project.__name__, msg=f"Initializing venv..", doPrint=self.verbose)
@@ -109,46 +109,81 @@ class Helpy:
 
         # Create default folders
         create_folder(folderpath=os.path.join(self.project_dir, 'doc'), verbose=self.verbose)
-        download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(self.project_dir, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
+        create_folder(folderpath=os.path.join(self.project_dir, 'services'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_doc.md", filepath=os.path.join(self.project_dir, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
         create_folder(folderpath=os.path.join(self.project_dir, 'test'), verbose=self.verbose)
         create_empty_file(filepath=os.path.join(self.project_dir, 'test', '__init__.py'), verbose=self.verbose)
-        download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(self.project_dir, 'test', 'test_functions.py'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_test.py", filepath=os.path.join(self.project_dir, 'test', 'test_functions.py'), verbose=self.verbose, overwrite=self.force)
 
         # Create default files (with content)
-        download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'README.md'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'README.md'), verbose=self.verbose, overwrite=self.force)
         replace_in_file(filepath=os.path.join(self.project_dir, 'README.md'), replace_this_text='{PROJECT_NAME}', replacment_text=project_name)
-        download_file(url=f"{FILES_URL}/default_main.py", filepath=os.path.join(self.project_dir, 'main.py'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_Dockerfile", filepath=os.path.join(self.project_dir, 'Dockerfile'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_dockerignore", filepath=os.path.join(self.project_dir, '.dockerignore'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_main.py", filepath=os.path.join(self.project_dir, 'main.py'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_Dockerfile", filepath=os.path.join(self.project_dir, 'Dockerfile'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_dockerignore", filepath=os.path.join(self.project_dir, '.dockerignore'), verbose=self.verbose, overwrite=self.force)
 
         printout(func=self.init_project.__name__, msg=f"Project initialized", doPrint=True)
     def init_package(self, package_name: str):
         """ Get files and folder structure"""
-        PROJFOLDER = os.getcwd()
-        printout(func=self.init_package.__name__, msg=f"Initializing new project at {PROJFOLDER}..", doPrint=self.verbose)
-        FILES_URL = f"https://raw.githubusercontent.com/mike-huls/helpy/main/files"
+        printout(func=self.init_package.__name__, msg=f"Initializing new project at {self.project_dir}..", doPrint=self.verbose)
 
         # Create default folders
-        create_folder(folderpath=os.path.join(PROJFOLDER, 'doc'), verbose=self.verbose)
-        download_file(url=f"{FILES_URL}/default_doc.md", filepath=os.path.join(PROJFOLDER, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
-        create_folder(folderpath=os.path.join(PROJFOLDER, 'test'), verbose=self.verbose)
-        create_empty_file(filepath=os.path.join(PROJFOLDER, 'test', '__init__.py'), verbose=self.verbose)
-        download_file(url=f"{FILES_URL}/default_test.py", filepath=os.path.join(PROJFOLDER, 'test', 'test_functions.py'), verbose=self.verbose, overwrite=self.force)
+        create_folder(folderpath=os.path.join(self.project_dir, 'doc'), verbose=self.verbose)
+        create_folder(folderpath=os.path.join(self.project_dir, 'services'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_doc.md", filepath=os.path.join(self.project_dir, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
+        create_folder(folderpath=os.path.join(self.project_dir, 'test'), verbose=self.verbose)
+        create_empty_file(filepath=os.path.join(self.project_dir, 'test', '__init__.py'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_test.py", filepath=os.path.join(self.project_dir, 'test', 'test_functions.py'), verbose=self.verbose, overwrite=self.force)
 
         # Create default files (with content)
-        download_file(url=f"{FILES_URL}/default_gitignore", filepath=os.path.join(PROJFOLDER, '.gitignore'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_readme_package.md", filepath=os.path.join(PROJFOLDER, 'README.md'), verbose=self.verbose, overwrite=self.force)
-        replace_in_file(filepath=os.path.join(PROJFOLDER, 'README.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
-        download_file(url=f"{FILES_URL}/default_setup.cfg", filepath=os.path.join(PROJFOLDER, 'setup.cfg'), verbose=self.verbose, overwrite=self.force)
-        download_file(url=f"{FILES_URL}/default_setup.py", filepath=os.path.join(PROJFOLDER, 'setup.py'), verbose=self.verbose, overwrite=self.force)
-        replace_in_file(filepath=os.path.join(PROJFOLDER, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+        download_file(url=f"{self.FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_readme_package.md", filepath=os.path.join(self.project_dir, 'README.md'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'README.md'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
+        download_file(url=f"{self.FILES_URL}/default_setup.cfg", filepath=os.path.join(self.project_dir, 'setup.cfg'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_setup.py", filepath=os.path.join(self.project_dir, 'setup.py'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'setup.py'), replace_this_text='{PROJECT_NAME}', replacment_text=package_name)
 
         # Create module folder with __init__.py
-        create_folder(folderpath=os.path.join(PROJFOLDER, package_name), verbose=self.verbose)
-        create_empty_file(filepath=os.path.join(PROJFOLDER, package_name, '__init__.py'), verbose=self.verbose)
+        create_folder(folderpath=os.path.join(self.project_dir, package_name), verbose=self.verbose)
+        create_empty_file(filepath=os.path.join(self.project_dir, package_name, '__init__.py'), verbose=self.verbose)
 
         printout(func=self.init_package.__name__, msg=f"Project initialized", doPrint=True)
+    def init_fastapi(self, api_name: str):
+        """ Get files and folder structure"""
+        printout(func=self.init_project.__name__, msg=f"Initializing new project '{api_name}' at {self.project_dir}..", doPrint=self.verbose)
+
+        # config/conf/.env
+        create_folder(folderpath=os.path.join(self.project_dir, 'config'), verbose=self.verbose)
+        create_folder(folderpath=os.path.join(self.project_dir, 'config', 'conf'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_env", filepath=os.path.join(self.project_dir, 'config', 'conf', '.env'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_definitions.py", filepath=os.path.join(self.project_dir, 'config', 'definitions.py'), verbose=self.verbose, overwrite=self.force)
+
+        # Create default folders
+        create_folder(folderpath=os.path.join(self.project_dir, 'services'), verbose=self.verbose)
+        # doc
+        create_folder(folderpath=os.path.join(self.project_dir, 'doc'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_doc.md", filepath=os.path.join(self.project_dir, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
+        # routes/meta/healthRoute.py
+        create_folder(folderpath=os.path.join(self.project_dir, 'routes'), verbose=self.verbose)
+        create_folder(folderpath=os.path.join(self.project_dir, 'routes', 'meta'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/healthRoute.py", filepath=os.path.join(self.project_dir, 'routes', 'meta', 'healthRoute.py'), verbose=self.verbose, overwrite=self.force)
+
+        # test
+        create_folder(folderpath=os.path.join(self.project_dir, 'test'), verbose=self.verbose)
+        create_empty_file(filepath=os.path.join(self.project_dir, 'test', '__init__.py'), verbose=self.verbose)
+        download_file(url=f"{self.FILES_URL}/default_test.py", filepath=os.path.join(self.project_dir, 'test', 'test_functions.py'), verbose=self.verbose, overwrite=self.force)
+
+        # Create default files (with content)
+        download_file(url=f"{self.FILES_URL}/default_gitignore", filepath=os.path.join(self.project_dir, '.gitignore'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_readme_project.md", filepath=os.path.join(self.project_dir, 'README.md'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'README.md'), replace_this_text='{API_NAME}', replacment_text=api_name)
+        download_file(url=f"{self.FILES_URL}/default_main_fastapi.py", filepath=os.path.join(self.project_dir, 'main.py'), verbose=self.verbose, overwrite=self.force)
+        replace_in_file(filepath=os.path.join(self.project_dir, 'main.py'), replace_this_text='{API_NAME}', replacment_text=api_name)
+        download_file(url=f"{self.FILES_URL}/default_Dockerfile", filepath=os.path.join(self.project_dir, 'Dockerfile'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_dockerignore", filepath=os.path.join(self.project_dir, '.dockerignore'), verbose=self.verbose, overwrite=self.force)
+
+        printout(func=self.init_project.__name__, msg=f"Project initialized", doPrint=True)
 
     # Loading .helpy and .env
     def load_helpy_settings(self, force:bool=False) -> None:
@@ -328,16 +363,17 @@ class Helpy:
 
         self.load_helpy_settings()
 
-        cmd_pyversion = f"{self.helpy_settings.venv_location}/Scripts/python.exe -V"
-        print(cmd_pyversion)
-        quit()
+        process = subprocess.Popen([f'{self.helpy_settings.python_location}', '-V'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        python_version = out.decode("utf-8").strip("\r").strip("\n")
+
         print(
         f"""HELPY version {self.helpy_cur_version()}
 
         ENVIRONMENT
         VENV_LOCATION: \t {self.helpy_settings.venv_location}
         ENV_FILE_PATH: \t {self.helpy_settings.env_file_path}
-        PYTHON_VERSION: \t
+        VENV Python: \t {python_version}
 
         PYPI:
         PYPI URL: \t {self.helpy_settings.pypi_url if (self.helpy_settings.pypi_url) else ""}
@@ -358,6 +394,7 @@ class Helpy:
             create venv                     Creates a virtualenv
             init project                    prepares the current folder for a python project
             init package                    prepares the current folder for a python package
+            init fastapi                    prepares the current folder for a FastAPI project
             serve fastapi                   tries to spin up the current project as a fastapi project 
             docker build                    builds the image specified in the dockerfile
             docker run                      runs your image (port_host:port_container, -d for detached (default False), -e to pass .env file (default False)
@@ -772,7 +809,11 @@ def main():
             package_name = args[0] if (len(args) > 0) else None
             if (package_name == None):
                 package_name = input("What is this package called?")
-            helpyItself.init_package(package_name=package_name)
+        elif (init_type == 'fastapi'):
+            api_name = args[0] if (len(args) > 0) else None
+            if (api_name == None):
+                api_name = input("What is this API called?")
+            helpyItself.init_fastapi(package_name=api_name)
         else:
             printout(func="helpy", msg=f"Unknown option for helpy init: '{init_type}'. Check out [helpy.py help] for more information")
     elif (cmd1 == 'create'):
@@ -879,6 +920,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-13 12:03
+# 2022-04-15 14:34
 if __name__ == "__main__":
     main()
