@@ -1,3 +1,4 @@
+import webbrowser
 import random
 import time
 from dataclasses import dataclass, asdict
@@ -592,6 +593,8 @@ class Helpy:
                 subprocess.call(cmd_serve)
             else:
                 subprocess.check_output(cmd_serve)
+            webbrowser.open("localhost:8000", new=2)
+
         except subprocess.CalledProcessError as e:
             printout(func=self.serve_fastapi.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
 
@@ -692,7 +695,6 @@ class Helpy:
             except subprocess.CalledProcessError as e:
                 printout(func=self.coveragetest.__name__, msg=f"Error generating coverage html: {e}", doPrint=self.verbose)
 
-            import webbrowser
             htmlfilepath = os.path.join(self.project_dir, 'htmlcov', 'index.html')
             webbrowser.open(htmlfilepath, new=2)
 
