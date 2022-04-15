@@ -582,18 +582,18 @@ class Helpy:
         printout(func="ensure_venv", msg=f"Venv created", doPrint=True)
 
     # Serve
-    def serve_fastapi(self):
+    def serve_fastapi(self, port:int=8000):
         """ Makes it so that you can serve fastapi"""
 
         # 1. Serve fastapi
         env_file_add = f"--env-file {self.helpy_settings.env_file_path}" if (self.helpy_settings.env_file_path) else ""
-        cmd_serve = f'{self.helpy_settings.python_location} -m uvicorn main:app {env_file_add} --reload'
+        cmd_serve = f'{self.helpy_settings.python_location} -m uvicorn main:app {env_file_add} --reload --port {port}'
         try:
+            webbrowser.open(f"localhost:{port}", new=2)
             if (self.verbose):
                 subprocess.call(cmd_serve)
             else:
                 subprocess.check_output(cmd_serve)
-            webbrowser.open("localhost:8000", new=2)
 
         except subprocess.CalledProcessError as e:
             printout(func=self.serve_fastapi.__name__, msg=f"Error building package: {e}", doPrint=self.verbose)
@@ -848,10 +848,20 @@ def main():
             if (serve_op == 'list'):
                 printout(func="helpy", msg=f"Available apps: {available_apps} \t\t Example: [helpy.py serve {available_apps[0]}]")
             elif (serve_op == 'fastapi'):
+                targetport = None
+                if ('-p' in args):
+                    try:
+                        targetport = args[args.index('-p') + 1]
+                    except Exception as e:
+                        printout(func="helpy", msg=f"Invalid argumetn for port -p. Please provide port like '-p 8000' for example")
+                        quit()
                 helpyItself.ensure_package_installed(package_name='fastapi')
                 helpyItself.ensure_package_installed(package_name='uvicorn')
                 helpyItself.ensure_package_installed(package_name='python-dotenv', import_package_name='dotenv')
-                helpyItself.serve_fastapi()
+                if (targetport == None):
+                    helpyItself.serve_fastapi()
+                else:
+                    helpyItself.serve_fastapi(port=targetport)
             else:
                 printout(func="helpy", msg=f"Unknown option for [helpy.py serve]: '{serve_op}'. Check out [helpy.py serve list] for more information")
         elif (cmd1 == 'docker'):
@@ -922,6 +932,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-15 14:42
+# 2022-04-15 14:53
 if __name__ == "__main__":
     main()

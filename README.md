@@ -15,7 +15,7 @@ init project                    prepares the current folder for a python project
 init package                    prepares the current folder for a python package
 init fastapi                    prepares the current folder for a FastAPI project
 
-serve fastapi                   tries to spin up the current project as a fastapi project 
+serve fastapi                   tries to spin up the current project as a fastapi project (-p PORT) 
 
 docker build                    builds the image specified in the dockerfile
 docker run                      runs your image (port_host:port_container, -d for detached (default False), -e to pass .env file (default False)
