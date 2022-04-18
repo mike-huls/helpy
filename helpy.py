@@ -525,12 +525,11 @@ class Helpy:
     def package_push(self):
         """ Pushes the package to pypi server """
 
-        pypi_url = self.helpy_settings.pypi_url
+        pypi_url = f"https://{self.helpy_settings.pypi_url}" if (self.helpy_settings.pypi_url) else None
         pypi_username = self.helpy_settings.pypi_username
         pypi_password = self.helpy_settings.pypi_password
 
         # 2. Make sure we have the correct pypi url
-        pypi_url = f'https://{pypi_url}'
         printout(func=f"{self.package_push.__name__}", msg=f"PyPi Url: {pypi_url}", doPrint=self.verbose)
 
         # 3. Prompt sure if required
@@ -541,7 +540,11 @@ class Helpy:
         # 4. Push the package
         printout(func=self.package_push.__name__, msg=f"Pushing package to '{pypi_url}'", doPrint=self.verbose)
         try:
-            cmd_push_package = f'{self.helpy_settings.python_location} -m twine upload dist/* --repository-url "{pypi_url}" -u "{pypi_username}" -p "{pypi_password}"'
+            private_pypi_url = f'--repository-url "{pypi_url}"' if (pypi_url != None) else ''
+            cmd_push_package = f'{self.helpy_settings.python_location} -m twine upload dist/* {private_pypi_url} -u "{pypi_username}" -p "{pypi_password}"'
+            print(cmd_push_package)
+            print("jojo")
+            quit()
             if (self.verbose):
                 subprocess.call(cmd_push_package)
             else:
@@ -936,6 +939,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-15 14:56
+# 2022-04-18 11:03
 if __name__ == "__main__":
     main()
