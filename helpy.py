@@ -542,9 +542,6 @@ class Helpy:
         try:
             private_pypi_url = f'--repository-url "{pypi_url}"' if (pypi_url != None) else ''
             cmd_push_package = f'{self.helpy_settings.python_location} -m twine upload dist/* {private_pypi_url} -u "{pypi_username}" -p "{pypi_password}"'
-            print(cmd_push_package)
-            print("jojo")
-            quit()
             if (self.verbose):
                 subprocess.call(cmd_push_package)
             else:
