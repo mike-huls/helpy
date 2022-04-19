@@ -1,15 +1,10 @@
 import webbrowser
-import random
-import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 import os
 import shutil
 import sys
 import subprocess
-import importlib.util
 import urllib.request
-from functools import wraps
-from typing import Callable
 
 
 
@@ -165,10 +160,11 @@ class Helpy:
         # doc
         create_folder(folderpath=os.path.join(self.project_dir, 'doc'), verbose=self.verbose)
         download_file(url=f"{self.FILES_URL}/default_doc.md", filepath=os.path.join(self.project_dir, 'doc', 'example.md'), verbose=self.verbose, overwrite=self.force)
-        # routes/meta/healthRoute.py
+        # routes/meta/default_healthRoute.py
         create_folder(folderpath=os.path.join(self.project_dir, 'routes'), verbose=self.verbose)
         create_folder(folderpath=os.path.join(self.project_dir, 'routes', 'meta'), verbose=self.verbose)
-        download_file(url=f"{self.FILES_URL}/healthRoute.py", filepath=os.path.join(self.project_dir, 'routes', 'meta', 'healthRoute.py'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_healthRoute.py", filepath=os.path.join(self.project_dir, 'routes', 'meta', 'healthRoute.py'), verbose=self.verbose, overwrite=self.force)
+        download_file(url=f"{self.FILES_URL}/default_healthRouteModels.py", filepath=os.path.join(self.project_dir, 'routes', 'meta', 'healthRouteModels.py'), verbose=self.verbose, overwrite=self.force)
 
         # test
         create_folder(folderpath=os.path.join(self.project_dir, 'test'), verbose=self.verbose)
@@ -936,6 +932,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-18 11:12
+# 2022-04-19 11:34
 if __name__ == "__main__":
     main()
