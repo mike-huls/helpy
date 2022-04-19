@@ -811,6 +811,7 @@ def main():
             package_name = args[0] if (len(args) > 0) else None
             if (package_name == None):
                 package_name = input("What is this package called?")
+                helpyItself.init_package(package_name=package_name)
         elif (init_type == 'fastapi'):
             api_name = args[0] if (len(args) > 0) else None
             if (api_name == None):
@@ -932,6 +933,6 @@ def main():
             helpyItself.helpy_help()
 
 
-# 2022-04-19 11:34
+# 2022-04-19 13:42
 if __name__ == "__main__":
     main()
